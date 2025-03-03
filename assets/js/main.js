@@ -1,7 +1,7 @@
 /* =====================================
 Template Name: 	Mediplus.
 Author Name: Naimur Rahman
-Website: http://wpthemesgrid.com/
+Website: https://wpthemesgrid.com/
 Description: Mediplus - Doctor HTML Template.
 Version:	1.1
 ========================================*/   

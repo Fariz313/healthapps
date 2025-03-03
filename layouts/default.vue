@@ -72,8 +72,9 @@
                                 <!--/ End Main Menu -->
                             </div>
                             <div class="col-lg-2 col-12">
-                                <div class="get-quote">
+                                <div class="get-quote d-flex">
                                     <NuxtLink to="/gizi" class="btn">Kalkulator Gizi</NuxtLink>
+                                    <NuxtLink to="/gizi" class="btn ml-3">Masuk</NuxtLink>
                                 </div>
                             </div>
                         </div>

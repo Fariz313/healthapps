@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   app: {
-    baseURL: "/healthapps/",
+    // baseURL: "/",
     buildAssetsDir: 'assets',
     head: {
       charset: 'utf-8',
@@ -46,7 +46,7 @@ export default defineNuxtConfig({
         { src: '/assets/js/steller.js', defer: true },
         { src: '/assets/js/wow.min.js', defer: true },
         { src: '/assets/js/jquery.magnific-popup.min.js', defer: true },
-        { src: 'http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js', defer: true },
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js', defer: true },
         { src: '/assets/js/bootstrap.min.js', defer: true },
         { src: '/assets/js/main.js', defer: true },
       ],
