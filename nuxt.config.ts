@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   app: {
     // baseURL: "/",
-    buildAssetsDir: 'assets',
+    // buildAssetsDir: 'assets',
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
@@ -27,6 +27,7 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/assets/css/normalize.css' },
         { rel: 'stylesheet', href: '/assets/style.css' },
         { rel: 'stylesheet', href: '/assets/css/responsive.css' },
+        { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' },
       ],
       script: [
         { src: '/assets/js/jquery.min.js', defer: true },
@@ -49,6 +50,7 @@ export default defineNuxtConfig({
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js', defer: true },
         { src: '/assets/js/bootstrap.min.js', defer: true },
         { src: '/assets/js/main.js', defer: true },
+        { src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js', defer: true },
       ],
     },
   },
@@ -66,7 +68,10 @@ export default defineNuxtConfig({
     '@/assets/css/normalize.css',
     '@/assets/style.css',
     '@/assets/css/responsive.css',
+    'handsontable/styles/handsontable.min.css',
+    'handsontable/styles/ht-theme-main.min.css'
   ],
 
   compatibilityDate: '2025-02-13',
+  modules: ['nuxt-auth-utils'],
 });

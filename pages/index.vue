@@ -8,11 +8,10 @@
                         <div class="row">
                             <div class="col-lg-7">
                                 <div class="text">
-                                    <h1>Puskesmas: <span>Pelayanan</span> Kesehatan Masyarakat</h1>
+                                    <h1> <span>Pelayanan</span> Pintar <br> Kesehatan Masyarakat</h1>
                                     <p>Puskesmas menyediakan layanan kesehatan dasar bagi masyarakat, termasuk
                                         imunisasi, pemeriksaan kehamilan, dan konsultasi gizi.</p>
                                     <div class="button">
-                                        <NuxtLink to="/register" class="btn">Daftar Sekarang</NuxtLink>
                                         <a href="#" class="btn primary">Pelajari Lebih Lanjut</a>
                                     </div>
                                 </div>

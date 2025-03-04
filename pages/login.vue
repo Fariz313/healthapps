@@ -2,10 +2,10 @@
     <div style="min-height: 100vh;">
         <div class="absolute-center">
             <div class="circle-form">
-                <form>
+                <form @submit.prevent="login">
                     <h2>Welcome</h2>
-                    <input type="email" placeholder="Email" required>
-                    <input type="password" placeholder="Password" required>
+                    <input v-model="credentials.email" type="email" placeholder="Email" required>
+                    <input v-model="credentials.password" type="password" placeholder="Password" required>
                     <button type="submit">Sign In</button>
                     <NuxtLink to="/forget_password">Lupa Password? Klik Disini</NuxtLink>
                     <br><br>
@@ -20,7 +20,42 @@
 <script setup lang="ts">
 definePageMeta({
     layout: 'clear'
-})
+});
+
+const { loggedIn, user, fetch: refreshSession } = useUserSession();
+const credentials = reactive({
+    email: '',
+    password: '',
+});
+
+async function login() {
+    try {
+        // Send a POST request to the external API
+        const response: any = await $fetch('http://127.0.0.1:8000/api/user/login', {
+            method: 'POST',
+            body: credentials,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        // Handle the response (e.g., set session or token)
+        if (response.token) {
+            // Save the token or session data (e.g., in localStorage or cookies)
+            localStorage.setItem('authToken', response.token);
+
+            // Refresh the session (if using a session utility)
+            await refreshSession();
+
+            // Redirect to the home page
+            await navigateTo('/');
+        } else {
+            alert('Login failed. Please check your credentials.');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+}
 </script>
 <style>
 .absolute-center {
