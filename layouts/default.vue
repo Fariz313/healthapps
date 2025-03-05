@@ -21,24 +21,11 @@
                                 <div class="main-menu">
                                     <nav class="navigation">
                                         <ul class="nav menu">
-                                            <li class="active"><a href="#">Home <i class="icofont-rounded-down"></i></a>
-                                                <ul class="dropdown">
-                                                    <li><a href="index.html">Home Page 1</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="#">Doctos </a></li>
-                                            <li><a href="#">Services </a></li>
-                                            <li><a href="#">Pages <i class="icofont-rounded-down"></i></a>
-                                                <ul class="dropdown">
-                                                    <li><a href="404.html">404 Error</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="#">Blogs <i class="icofont-rounded-down"></i></a>
-                                                <ul class="dropdown">
-                                                    <li><a href="blog-single.html">Blog Details</a></li>
-                                                </ul>
-                                            </li>
-                                            <li><a href="contact.html">Contact Us</a></li>
+                                            <li class="active"><router-link to="/">Home</router-link></li>
+                                            <li class=""><router-link to="/pasien">Pasien</router-link></li>
+                                            <li class=""><router-link to="/ptm">Skrining PTM</router-link></li>
+                                            <li class=""><router-link to="/pregnant">Skrining Ibu Hamil</router-link></li>
+                                            <li class=""><router-link to="/gizi">Skrining Gizi</router-link></li>
                                         </ul>
                                     </nav>
                                 </div>

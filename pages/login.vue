@@ -9,8 +9,6 @@
                     <button type="submit">Sign In</button>
                     <NuxtLink to="/forget_password">Lupa Password? Klik Disini</NuxtLink>
                     <br><br>
-                    <NuxtLink to="/register">Belum Punya Akun? Klik Disini</NuxtLink>
-
                 </form>
             </div>
 
