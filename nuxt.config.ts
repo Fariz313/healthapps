@@ -51,6 +51,8 @@ export default defineNuxtConfig({
         { src: '/assets/js/bootstrap.min.js', defer: true },
         { src: '/assets/js/main.js', defer: true },
         { src: 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js', defer: true },
+        { src: 'https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=', defer: true },
+        { src: 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', defer: true },
       ],
     },
   },
@@ -69,7 +71,8 @@ export default defineNuxtConfig({
     '@/assets/style.css',
     '@/assets/css/responsive.css',
     'handsontable/styles/handsontable.min.css',
-    'handsontable/styles/ht-theme-main.min.css'
+    'handsontable/styles/ht-theme-main.min.css',
+    'vue-multiselect/dist/vue-multiselect.css'
   ],
 
   compatibilityDate: '2025-02-13',

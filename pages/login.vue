@@ -41,6 +41,7 @@ async function login() {
         if (response.token) {
             // Save the token or session data (e.g., in localStorage or cookies)
             localStorage.setItem('authToken', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
 
             // Refresh the session (if using a session utility)
             await refreshSession();

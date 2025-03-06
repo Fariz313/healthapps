@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-5">
-    <h1 class="mb-4">Data Ibu Hamil</h1>
+    <h1 class="mb-4">Data PTM</h1>
 
     <!-- Form Tambah/Edit Data -->
     <div class="card mb-4">
@@ -8,61 +8,35 @@
         <h5 class="card-title">{{ isEditing ? 'Edit Data' : 'Tambah Data Baru' }}</h5>
         <form @submit.prevent="saveData">
           <div class="row g-3">
+            <!-- User ID with VueMultiselect -->
             <div class="col-md-6">
-              <label for="user_id" class="form-label">User ID</label>
-              <input v-model="form.user_id" type="number" class="form-control" id="user_id" required>
+              <label for="user_id" class="form-label">Pasien</label>
+              <VueMultiselect v-model="form.user_id" :options="userOptions" :searchable="true"
+                :loading="isFetchingUsers" label="name" track-by="id" placeholder="Cari user..."
+                @search-change="fetchUsers" />
             </div>
             <div class="col-md-6">
-              <label for="recorded_by" class="form-label">Recorded By</label>
-              <input v-model="form.recorded_by" type="number" class="form-control" id="recorded_by">
+              <label for="recorded_by" class="form-label">Nama Pendata</label>
+              <input v-model="recorded_by" readonly type="text" class="form-control" id="recorded_by">
             </div>
-            <div class="col-md-4">
-              <label for="weight" class="form-label">Weight</label>
-              <input v-model="form.weight" type="number" step="0.1" class="form-control" id="weight">
+
+            <!-- Numeric Fields -->
+            <div class="col-md-4" v-for="field in numericFields" :key="field.name">
+              <label :for="field.name" class="form-label">{{ field.label }}</label>
+              <input v-model="form[field.name]" type="number" step="0.1" class="form-control" :id="field.name">
             </div>
-            <div class="col-md-4">
-              <label for="height" class="form-label">Height</label>
-              <input v-model="form.height" type="number" step="0.1" class="form-control" id="height">
-            </div>
-            <div class="col-md-4">
-              <label for="age_at_pregnancy" class="form-label">Age at Pregnancy</label>
-              <input v-model="form.age_at_pregnancy" type="number" step="0.1" class="form-control" id="age_at_pregnancy">
-            </div>
+
             <!-- Boolean Fields -->
-            <div class="col-md-6">
-              <label class="form-label">Young Pregnant</label>
-              <select v-model="form.young_pregnant" class="form-select">
-                <option :value="null">Pilih</option>
-                <option :value="true">Ya</option>
-                <option :value="false">Tidak</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Old Pregnant</label>
-              <select v-model="form.old_pregnant" class="form-select">
-                <option :value="null">Pilih</option>
-                <option :value="true">Ya</option>
-                <option :value="false">Tidak</option>
-              </select>
-            </div>
-            <!-- Tambahkan field boolean lainnya dengan cara yang sama -->
-            <div class="col-md-6">
-              <label class="form-label">Twin Birth</label>
-              <select v-model="form.twin_birth" class="form-select">
-                <option :value="null">Pilih</option>
-                <option :value="true">Ya</option>
-                <option :value="false">Tidak</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Preeklampsia</label>
-              <select v-model="form.preeklampsia" class="form-select">
-                <option :value="null">Pilih</option>
+            <div class="col-md-6" v-for="field in booleanFields" :key="field.name">
+              <label class="form-label">{{ field.label }}</label>
+              <select v-model="form[field.name]" class="form-select">
+                <option disabled selected>Pilih</option>
                 <option :value="true">Ya</option>
                 <option :value="false">Tidak</option>
               </select>
             </div>
           </div>
+
           <button type="submit" class="btn btn-primary mt-3">
             {{ isEditing ? 'Update Data' : 'Tambah Data' }}
           </button>
@@ -75,22 +49,143 @@
 
     <!-- List Data dalam Card -->
     <div class="row">
-      <div v-for="record in records" :key="record.id" class="col-md-4 mb-4">
+      <div v-for="record in records" :key="record.id" class="col-md-6 col-lg-4 mb-4">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title">Pasien: {{ record.user_id }}</h5>
+            <h5 class="card-title">Pasien: {{ record.name }}</h5>
             <p class="card-text">
-              <strong>Recorded By:</strong> {{ record.recorded_by }}<br>
-              <strong>Weight:</strong> {{ record.weight }} kg<br>
-              <strong>Height:</strong> {{ record.height }} cm<br>
-              <strong>Age at Pregnancy:</strong> {{ record.age_at_pregnancy }}<br>
-              <strong>Young Pregnant:</strong> {{ record.young_pregnant ? 'Ya' : 'Tidak' }}<br>
-              <strong>Old Pregnant:</strong> {{ record.old_pregnant ? 'Ya' : 'Tidak' }}<br>
-              <strong>Twin Birth:</strong> {{ record.twin_birth ? 'Ya' : 'Tidak' }}<br>
-              <strong>Preeklampsia:</strong> {{ record.preeklampsia ? 'Ya' : 'Tidak' }}<br>
+              <strong>Petugas:</strong> {{ record.recorded_by }}<br>
+              <strong>Tanggal:</strong> {{ formatDate(record.created_at) }}<br>
+              <template v-for="field in allFields" :key="field.name">
+                <div>
+                  <p> <strong>{{ field.label }} :</strong> {{ record[field.name] }} {{ field.unit }}
+                  </p>
+                </div>
+              </template>
             </p>
-            <button class="btn btn-sm btn-warning me-2" @click="editData(record)">Edit</button>
-            <button class="btn btn-sm btn-danger" @click="deleteData(record.id)">Hapus</button>
+            <button class="btn btn-danger btn-sm p-1 px-2  me-2" @click="deleteData(record.id)">Hapus</button>
+            <button class="btn btn-info btn-sm p-1 px-2 me-2" data-bs-toggle="modal" data-bs-target="#detailModal"
+              @click="openDetailModal(record)">
+              Detail
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailModalLabel">Detail Data Pasien</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <template v-if="(selectedRecord)">
+              <div v-if="(selectedRecord.BP < 120 && selectedRecord.BP2 < 80)" class="alert alert-success" role="alert">
+                <b>Tekanan Darah Normal Pertahankan !</b>
+              </div>
+              <div v-else-if="selectedRecord.BP < 140 && selectedRecord.BP2 < 90" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi</b>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                  <li>Pembatasan intake natrium <br>
+                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
+                  </li>
+                  <li>
+                    Aktifitas fisik aerobik
+                    <br>
+                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
+                  </li>
+                  <li>
+                    Pembatasan konsumsi alkohol
+                    <br>
+                    max 30ml bagi laki-laki
+                    <br>
+                    max 20ml bagi perempuan
+                  </li>
+                  <li>
+                    Pembatasan merokok
+                  </li>
+                </ol>
+              </div>
+              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi</b>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                  <li>Pembatasan intake natrium <br>
+                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
+                  </li>
+                  <li>
+                    Aktifitas fisik aerobik
+                    <br>
+                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
+                  </li>
+                  <li>
+                    Pembatasan konsumsi alkohol
+                    <br>
+                    max 30ml bagi laki-laki
+                    <br>
+                    max 20ml bagi perempuan
+                  </li>
+                  <li>
+                    Pembatasan merokok
+                  </li>
+                </ol>
+                <p>Segera kunjungi fasilitas kesehatan jika 2 minggu pasca modifikasi gaya hidup target tekanan darah tidak tercapai</p>
+              </div>
+              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi grade 2</b>
+                <p>Segera datangi fasilitas kesehatan untuk mendapat pengobatan dari dokter</p>
+                <ol>
+                  <li>Dilakukan pengobatan & pengawasan oleh dokter</li>
+                </ol>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                </ol>
+              </div>
+              <p><strong>Pasien:</strong> {{ selectedRecord.name }}</p>
+              <p><strong>Recorded By:</strong> {{ selectedRecord.recorded_by }}</p>
+              <p><strong>Tanggal:</strong> {{ formatDate(selectedRecord.created_at) }}</p>
+
+              <template v-for="field in allFields" :key="field.name">
+
+                <div>
+                  <p> <strong>{{ field.label }} :</strong> {{ selectedRecord[field.name] }} {{ field.unit }}
+                  </p>
+                </div>
+              </template>
+            </template>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
           </div>
         </div>
       </div>
@@ -100,68 +195,111 @@
 
 <script setup>
 import { ref } from 'vue';
-
-// Data simulasi
-const records = ref([
-  {
-    id: 1,
-    user_id: 101,
-    recorded_by: 201,
-    weight: 65.5,
-    height: 170,
-    age_at_pregnancy: 28,
-    young_pregnant: true,
-    old_pregnant: false,
-    twin_birth: false,
-    preeklampsia: true,
-  },
-  {
-    id: 2,
-    user_id: 102,
-    recorded_by: 202,
-    weight: 60,
-    height: 165,
-    age_at_pregnancy: 32,
-    young_pregnant: false,
-    old_pregnant: true,
-    twin_birth: true,
-    preeklampsia: false,
-  },
+import VueMultiselect from 'vue-multiselect';
+const selectedUser = ref(null);
+// Fields configuration
+const numericFields = ref([
+  { unit: "Kg", name: 'weight', label: 'Berat' },
+  { unit: "Cm", name: 'height', label: 'Tinggi' },
+  { unit: "mmhg", name: 'BP', label: 'Tekanan sistolik' },
+  { unit: "mmhg", name: 'BP2', label: 'Tekanan diastolik' },
+  { unit: "", name: 'GDS', label: 'GDS' },
+  { unit: "", name: 'GDP', label: 'GDP' }
 ]);
+const selectedRecord = ref(null);
 
-// Form untuk tambah/edit data
+const booleanFields = ref([]);
+
+const allFields = ref([...numericFields.value, ...booleanFields.value]);
+
+const records = ref([]);
 const form = ref({
-  id: null,
-  user_id: null,
-  recorded_by: null,
-  weight: null,
-  height: null,
-  age_at_pregnancy: null,
-  young_pregnant: null,
-  old_pregnant: null,
-  twin_birth: null,
-  preeklampsia: null,
+  weight: "",
+  height: "",
+  BP: "",
+  BP2: "",
+  GDS: "",
+  GDP: ""
 });
-
 const isEditing = ref(false);
+function calculatePoints(record) {
+  let totalPoints = 0;
 
-// Tambah/Update Data
-function saveData() {
-  if (isEditing.value) {
-    // Update data yang sudah ada
-    const index = records.value.findIndex((r) => r.id === form.value.id);
-    if (index !== -1) {
-      records.value[index] = { ...form.value };
+  booleanFields.value.forEach(field => {
+    if (record[field.name] === 1) {
+      totalPoints += field.point;
     }
-  } else {
-    // Tambah data baru
-    const newRecord = {
-      id: records.value.length + 1,
-      ...form.value,
-    };
-    records.value.push(newRecord);
+  });
+
+  return totalPoints;
+}
+console.log(form.value);
+
+// User selection data
+const userOptions = ref([]);
+const isFetchingUsers = ref(false);
+
+// Fetch all records from API
+async function fetchRecords() {
+  try {
+    const response = await useFetch('http://localhost:8000/api/ptm');
+    const recordsWithPoints = response.data.value?.data.data.map(record => {
+      return {
+        ...record,
+        totalPoints: calculatePoints(record),
+      };
+    });
+    records.value = recordsWithPoints;
+    console.log("data in");
+    console.log("data", records.value);
+
+  } catch (error) {
+    console.error("Error fetching records:", error);
   }
-  resetForm();
+}
+
+// Fetch users from API
+async function fetchUsers(query) {
+  if (!query) return;
+  isFetchingUsers.value = true;
+  try {
+    const response = await fetch(`http://localhost:8000/api/users?search=${query}`);
+    const data = await response.json();
+    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name }));
+
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  } finally {
+    isFetchingUsers.value = false;
+  }
+}
+
+// Save or update data
+async function saveData() {
+  try {
+    const url = isEditing.value
+      ? `http://localhost:8000/api/ptm/${form.value.id}`
+      : 'http://localhost:8000/api/ptm';
+
+    const method = isEditing.value ? 'PUT' : 'POST';
+    let body = form.value
+    body.user_id = form.value.user_id.id
+    const data = await useFetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    const response = data.data.value;
+
+    if (data.status.value != "success") throw new Error("Gagal menyimpan data.");
+
+    fetchRecords(); // Refresh data
+    resetForm();
+  } catch (error) {
+    console.error("Error saving data:", error);
+  }
 }
 
 // Edit Data
@@ -169,44 +307,77 @@ function editData(record) {
   form.value = { ...record };
   isEditing.value = true;
 }
-
-// Hapus Data
-function deleteData(id) {
-  records.value = records.value.filter((record) => record.id !== id);
-}
-
-// Batal Edit
 function cancelEdit() {
-  resetForm();
+  form.value = {
+    weight: "",
+    height: "",
+    td: "",
+    gds: "",
+    gdp: ""
+  }
+  isEditing.value = false;
+
+}
+// Delete Data
+async function deleteData(id) {
+  try {
+    const response = await fetch(`http://localhost:8000/api/ptm/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) throw new Error("Gagal menghapus data.");
+
+    fetchRecords(); // Refresh data
+  } catch (error) {
+    console.error("Error deleting data:", error);
+  }
 }
 
 // Reset Form
 function resetForm() {
-  form.value = {
-    id: null,
-    user_id: null,
-    recorded_by: null,
-    weight: null,
-    height: null,
-    age_at_pregnancy: null,
-    young_pregnant: null,
-    old_pregnant: null,
-    twin_birth: null,
-    preeklampsia: null,
-  };
+  form.value = {};
   isEditing.value = false;
 }
-</script>
 
-<style scoped>
-.card {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+// Format Boolean Values for Display
+function formatValue(value) {
+  if (value === true) return 'Ya';
+  if (value === false) return 'Tidak';
+  return value ?? '-';
 }
-.card-title {
-  font-size: 1.25rem;
-  font-weight: bold;
+function openDetailModal(record) {
+  selectedRecord.value = record;
 }
-.card-text {
-  font-size: 0.9rem;
+
+// Fetch records on component mount
+fetchRecords();
+const recorded_by = ref("");
+if (process.client) {
+  form.recorded_by = JSON.parse(localStorage.getItem('user')).id
+  recorded_by.value = JSON.parse(localStorage.getItem('user')).name
+
+
 }
-</style>
+function formatDate(dateString) {
+  const date = new Date(dateString);
+
+  // Convert to WIB (UTC+7)
+  const wibOffset = 7 * 60; // WIB is UTC+7
+  const wibDate = new Date(date.getTime() + wibOffset * 60 * 1000);
+
+  // Format the date
+  const options = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone: 'Asia/Jakarta'
+  };
+
+  const formattedDate = wibDate.toLocaleString('en-GB', options).replace(',', '');
+
+  return formattedDate;
+}
+</script>
