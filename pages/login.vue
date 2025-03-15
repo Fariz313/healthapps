@@ -29,7 +29,7 @@ const credentials = reactive({
 async function login() {
     try {
         // Send a POST request to the external API
-        const response: any = await $fetch('http://127.0.0.1:8000/api/user/login', {
+        const response: any = await $fetch('https://api.kaderpintar.id/api/user/login', {
             method: 'POST',
             body: credentials,
             headers: {

@@ -228,7 +228,7 @@ const isFetchingUsers = ref(false);
 // Fetch all records from API
 async function fetchRecords() {
     try {
-        const response = await useFetch('http://localhost:8000/api/pregnants');
+        const response = await useFetch('https://api.kaderpintar.id/api/pregnants');
         const recordsWithPoints = response.data.value?.data.data.map(record => {
             return {
                 ...record,
@@ -249,7 +249,7 @@ async function fetchUsers(query) {
     if (!query) return;
     isFetchingUsers.value = true;
     try {
-        const response = await fetch(`http://localhost:8000/api/users?search=${query}`);
+        const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
         const data = await response.json();
         userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name }));
 
@@ -264,8 +264,8 @@ async function fetchUsers(query) {
 async function saveData() {
     try {
         const url = isEditing.value
-            ? `http://localhost:8000/api/pregnants/${form.value.id}`
-            : 'http://localhost:8000/api/pregnants';
+            ? `https://api.kaderpintar.id/api/pregnants/${form.value.id}`
+            : 'https://api.kaderpintar.id/api/pregnants';
 
         const method = isEditing.value ? 'PUT' : 'POST';
         let body = form.value
@@ -326,7 +326,7 @@ function cancelEdit() {
 // Delete Data
 async function deleteData(id) {
     try {
-        const response = await fetch(`http://localhost:8000/api/pregnants/${id}`, {
+        const response = await fetch(`https://api.kaderpintar.id/api/pregnants/${id}`, {
             method: 'DELETE',
         });
 
