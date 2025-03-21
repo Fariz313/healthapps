@@ -23,7 +23,8 @@
             <!-- Numeric Fields -->
             <div class="col-md-4" v-for="field in numericFields" :key="field.name">
               <label :for="field.name" class="form-label">{{ field.label }}</label>
-              <input v-model="form[field.name]" :readonly="field.readonly" type="number" step="0.1" class="form-control" :id="field.name">
+              <input v-model="form[field.name]" :readonly="field.readonly" type="number" step="0.1" class="form-control"
+                :id="field.name">
             </div>
 
             <!-- Boolean Fields -->
@@ -94,7 +95,74 @@
                 </div>
               </template>
 
-              <h3>Hasil Kalkulasi & Rekomendasi:</h3>
+              <h4>Hasil Kalkulasi & Rekomendasi:</h4>
+              <ul>
+                <li>
+                  <div>
+                    <b>Berat Badan
+                      menurut Umur :</b>
+                    <p v-if="selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m3sd">
+                      Berat badan sangat
+                      kurang (severely
+                      underweight)
+                    </p>
+                    <p
+                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
+                      Berat badan kurang
+                      (underweight)
+                    </p>
+                    <p
+                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
+                      Berat badan normal
+                    </p>
+                    <p v-else>
+                      Risiko Berat badan lebih
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <b>Panjang Badan
+                      atau Tinggi Badan
+                      menurut Umur :</b>
+                    <p v-if="selectedRecord.height < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
+                      Sangat Pendek
+                    </p>
+                    <p
+                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
+                      Pendek
+                    </p>
+                    <p
+                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
+                      Normal
+                    </p>
+                    <p v-else>
+                      Tinggi
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <b>Indeks Massa
+                      Tubuh menurut
+                      Umurr :</b>
+                      <p v-if="(selectedRecord.weight/selectedRecord.height) < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
+                      Gizi Buruk
+                    </p>
+                    <p
+                      v-else-if="(selectedRecord.weight/selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && (selectedRecord.weight/selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
+                      Gizi Kurang
+                    </p>
+                    <p
+                      v-else-if="(selectedRecord.weight/selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && (selectedRecord.weight/selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
+                      Gizi Lebih
+                    </p>
+                    <p v-else>
+                      Obesitas
+                    </p>
+                  </div>
+                </li>
+              </ul>
             </template>
           </div>
           <div class="modal-footer">
@@ -112,9 +180,9 @@ import VueMultiselect from 'vue-multiselect';
 const selectedUser = ref(null);
 // Fields configuration
 const numericFields = ref([
-  { unit: "Kg", name: 'weight', label: 'Berat' ,readonly:false},
-  { unit: "Cm", name: 'height', label: 'Tinggi',readonly:false },
-  { unit: "bulan", name: 'age', label: 'Usia saat ini',readonly:true,custom:'usia' }
+  { unit: "Kg", name: 'weight', label: 'Berat', readonly: false },
+  { unit: "Cm", name: 'height', label: 'Tinggi', readonly: false },
+  { unit: "bulan", name: 'age', label: 'Usia saat ini', readonly: true, custom: 'usia' }
 ]);
 const selectedRecord = ref(null);
 
@@ -149,14 +217,10 @@ const isFetchingUsers = ref(false);
 // Fetch all records from API
 async function fetchRecords() {
   try {
-    const response = await useFetch('https://api.kaderpintar.id/api/gizi');
-    const recordsWithPoints = response.data.value?.data.data.map(record => {
-      return {
-        ...record,
-        totalPoints: calculatePoints(record),
-      };
-    });
-    records.value = recordsWithPoints;
+
+    const request = await fetch('http://localhost:8000/api/gizi');
+    const response = await request.json();;
+    records.value = response.data.data;
     console.log("data in");
     console.log("data", records.value);
 
@@ -170,12 +234,12 @@ async function fetchUsers(query) {
   if (!query) return;
   isFetchingUsers.value = true;
   try {
-    const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
+    const response = await fetch(`http://localhost:8000/api/users?search=${query}`);
     const data = await response.json();
     userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name, birth_date: user.birth_date }));
 
     console.log("KEPILIH", form.value.user_id);
-    
+
     // Jika pasien sudah dipilih, hitung usia dalam bulan
     if (form.value.user_id) {
       const selectedUser = userOptions.value.find(user => user.id === form.value.user_id.id);
@@ -196,8 +260,8 @@ async function fetchUsers(query) {
 async function saveData() {
   try {
     const url = isEditing.value
-      ? `https://api.kaderpintar.id/api/gizi/${form.value.id}`
-      : 'https://api.kaderpintar.id/api/gizi';
+      ? `http://localhost:8000/api/gizi/${form.value.id}`
+      : 'http://localhost:8000/api/gizi';
 
     const method = isEditing.value ? 'PUT' : 'POST';
     let body = form.value
@@ -236,7 +300,7 @@ function cancelEdit() {
 // Delete Data
 async function deleteData(id) {
   try {
-    const response = await fetch(`https://api.kaderpintar.id/api/gizi/${id}`, {
+    const response = await fetch(`http://localhost:8000/api/gizi/${id}`, {
       method: 'DELETE',
     });
 
@@ -305,7 +369,7 @@ function calculateAgeInMonths(birthDate) {
   const dayDiff = today.getDate() - birthDateObj.getDate();
 
   let ageInMonths = yearDiff * 12 + monthDiff;
-  
+
   // If the birth date hasn't passed this year yet, subtract 1 month
   if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
     ageInMonths--;
@@ -323,5 +387,61 @@ watch(() => form.value.user_id, (newUserId) => {
     form.value.age = ""; // Reset age jika tidak ada user yang dipilih
   }
 });
+
+const BBPB_L = ref({});
+const BBPB_P = ref({});
+const BBTB_L = ref({});
+const BBTB_P = ref({});
+const BBU_L = ref({});
+const BBU_P = ref({});
+const IMTU_L = ref({});
+const IMTU_P = ref({});
+const TBU_L = ref({});
+const TBU_P = ref({});
+async function fetchCalculate() {
+  try {
+    const BBPB_L_req = await fetch('/assets/json/gizi/BBPB_L.json');
+    const BBPB_P_req = await fetch('/assets/json/gizi/BBPB_P.json');
+    const BBTB_L_req = await fetch('/assets/json/gizi/BBTB_L.json');
+    const BBTB_P_req = await fetch('/assets/json/gizi/BBTB_P.json');
+    const BBU_L_req = await fetch('/assets/json/gizi/BBU_L.json');
+    const BBU_P_req = await fetch('/assets/json/gizi/BBU_P.json');
+    const IMTU_L_req = await fetch('/assets/json/gizi/IMTU_L.json');
+    const IMTU_P_req = await fetch('/assets/json/gizi/IMTU_P.json');
+    const TBU_L_req = await fetch('/assets/json/gizi/TBU_L.json');
+    const TBU_P_req = await fetch('/assets/json/gizi/TBU_P.json');
+    BBPB_L.value = await BBPB_L_req.json();
+    BBPB_P.value = await BBPB_P_req.json();
+    BBTB_L.value = await BBTB_L_req.json();
+    BBTB_P.value = await BBTB_P_req.json();
+    BBU_L.value = await BBU_L_req.json();
+    BBU_P.value = await BBU_P_req.json();
+    IMTU_L.value = await IMTU_L_req.json();
+    IMTU_P.value = await IMTU_P_req.json();
+    TBU_L.value = await TBU_L_req.json();
+    TBU_P.value = await TBU_P_req.json();
+
+  } catch (error) {
+    console.error('Error fetching BBPB_L.json:', error);
+    return null;
+  }
+}
+function searchByKey(data, key, searchValue) {
+  // console.log(data);
+
+  return data.filter(item => {
+    // Jika nilai dari key adalah string, lakukan pencarian case-insensitive
+    if (typeof item[key] === 'string') {
+      return item[key].toLowerCase().includes(searchValue.toLowerCase());
+    }
+    // Jika nilai dari key adalah number, lakukan pencarian exact match
+    return item[key] === searchValue;
+  })[0];
+}
+console.log("getrecord");
+await fetchRecords(); // Refresh data
+console.log("getrecord done");
+
+fetchCalculate();
 
 </script>
