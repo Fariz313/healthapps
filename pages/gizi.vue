@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-5">
-    <h1 class="mb-4">Data PTM</h1>
+    <h1 class="mb-4">Data Gizi Anak</h1>
 
     <!-- Form Tambah/Edit Data -->
     <div class="card mb-4">
@@ -23,7 +23,7 @@
             <!-- Numeric Fields -->
             <div class="col-md-4" v-for="field in numericFields" :key="field.name">
               <label :for="field.name" class="form-label">{{ field.label }}</label>
-              <input v-model="form[field.name]" type="number" step="0.1" class="form-control" :id="field.name">
+              <input v-model="form[field.name]" :readonly="field.readonly" type="number" step="0.1" class="form-control" :id="field.name">
             </div>
 
             <!-- Boolean Fields -->
@@ -82,95 +82,6 @@
           </div>
           <div class="modal-body">
             <template v-if="(selectedRecord)">
-              <div v-if="(selectedRecord.BP < 120 && selectedRecord.BP2 < 80)" class="alert alert-success" role="alert">
-                <b>Tekanan Darah Normal Pertahankan !</b>
-              </div>
-              <div v-else-if="selectedRecord.BP < 140 && selectedRecord.BP2 < 90" class="alert alert-warning"
-                role="alert">
-                <b>Pre Hipertensi</b>
-                <p>Anjuran Perubahan Gaya Hidup</p>
-                <ol>
-                  <li>
-                    Penurunan Berat Badan
-                    <br>
-                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
-                  </li>
-                  <li>
-                    Diet Tinggi serat dan rendah lemak (DASH)
-                  </li>
-                  <li>Pembatasan intake natrium <br>
-                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
-                  </li>
-                  <li>
-                    Aktifitas fisik aerobik
-                    <br>
-                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
-                  </li>
-                  <li>
-                    Pembatasan konsumsi alkohol
-                    <br>
-                    max 30ml bagi laki-laki
-                    <br>
-                    max 20ml bagi perempuan
-                  </li>
-                  <li>
-                    Pembatasan merokok
-                  </li>
-                </ol>
-              </div>
-              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
-                role="alert">
-                <b>Pre Hipertensi</b>
-                <p>Anjuran Perubahan Gaya Hidup</p>
-                <ol>
-                  <li>
-                    Penurunan Berat Badan
-                    <br>
-                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
-                  </li>
-                  <li>
-                    Diet Tinggi serat dan rendah lemak (DASH)
-                  </li>
-                  <li>Pembatasan intake natrium <br>
-                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
-                  </li>
-                  <li>
-                    Aktifitas fisik aerobik
-                    <br>
-                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
-                  </li>
-                  <li>
-                    Pembatasan konsumsi alkohol
-                    <br>
-                    max 30ml bagi laki-laki
-                    <br>
-                    max 20ml bagi perempuan
-                  </li>
-                  <li>
-                    Pembatasan merokok
-                  </li>
-                </ol>
-                <p>Segera kunjungi fasilitas kesehatan jika 2 minggu pasca modifikasi gaya hidup target tekanan darah tidak tercapai</p>
-              </div>
-              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
-                role="alert">
-                <b>Pre Hipertensi grade 2</b>
-                <p>Segera datangi fasilitas kesehatan untuk mendapat pengobatan dari dokter</p>
-                <ol>
-                  <li>Dilakukan pengobatan & pengawasan oleh dokter</li>
-                </ol>
-                <p>Anjuran Perubahan Gaya Hidup</p>
-                <ol>
-                  <li>
-                    Penurunan Berat Badan
-                    <br>
-                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
-                  </li>
-                  <li>
-                    Diet Tinggi serat dan rendah lemak (DASH)
-                  </li>
-                </ol>
-              </div>
               <p><strong>Pasien:</strong> {{ selectedRecord.name }}</p>
               <p><strong>Recorded By:</strong> {{ selectedRecord.recorded_by }}</p>
               <p><strong>Tanggal:</strong> {{ formatDate(selectedRecord.created_at) }}</p>
@@ -182,6 +93,8 @@
                   </p>
                 </div>
               </template>
+
+              <h3>Hasil Kalkulasi & Rekomendasi:</h3>
             </template>
           </div>
           <div class="modal-footer">
@@ -199,12 +112,9 @@ import VueMultiselect from 'vue-multiselect';
 const selectedUser = ref(null);
 // Fields configuration
 const numericFields = ref([
-  { unit: "Kg", name: 'weight', label: 'Berat' },
-  { unit: "Cm", name: 'height', label: 'Tinggi' },
-  { unit: "mmhg", name: 'BP', label: 'Tekanan sistolik' },
-  { unit: "mmhg", name: 'BP2', label: 'Tekanan diastolik' },
-  { unit: "", name: 'GDS', label: 'GDS' },
-  { unit: "", name: 'GDP', label: 'GDP' }
+  { unit: "Kg", name: 'weight', label: 'Berat' ,readonly:false},
+  { unit: "Cm", name: 'height', label: 'Tinggi',readonly:false },
+  { unit: "bulan", name: 'age', label: 'Usia saat ini',readonly:true,custom:'usia' }
 ]);
 const selectedRecord = ref(null);
 
@@ -216,10 +126,7 @@ const records = ref([]);
 const form = ref({
   weight: "",
   height: "",
-  BP: "",
-  BP2: "",
-  GDS: "",
-  GDP: ""
+  age: "",
 });
 const isEditing = ref(false);
 function calculatePoints(record) {
@@ -242,7 +149,7 @@ const isFetchingUsers = ref(false);
 // Fetch all records from API
 async function fetchRecords() {
   try {
-    const response = await useFetch('https://api.kaderpintar.id/api/ptm');
+    const response = await useFetch('https://api.kaderpintar.id/api/gizi');
     const recordsWithPoints = response.data.value?.data.data.map(record => {
       return {
         ...record,
@@ -265,7 +172,17 @@ async function fetchUsers(query) {
   try {
     const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
     const data = await response.json();
-    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name }));
+    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name, birth_date: user.birth_date }));
+
+    console.log("KEPILIH", form.value.user_id);
+    
+    // Jika pasien sudah dipilih, hitung usia dalam bulan
+    if (form.value.user_id) {
+      const selectedUser = userOptions.value.find(user => user.id === form.value.user_id.id);
+      if (selectedUser) {
+        form.value.age = calculateAgeInMonths(selectedUser.birth_date);
+      }
+    }
 
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -274,12 +191,13 @@ async function fetchUsers(query) {
   }
 }
 
+
 // Save or update data
 async function saveData() {
   try {
     const url = isEditing.value
-      ? `https://api.kaderpintar.id/api/ptm/${form.value.id}`
-      : 'https://api.kaderpintar.id/api/ptm';
+      ? `https://api.kaderpintar.id/api/gizi/${form.value.id}`
+      : 'https://api.kaderpintar.id/api/gizi';
 
     const method = isEditing.value ? 'PUT' : 'POST';
     let body = form.value
@@ -311,9 +229,6 @@ function cancelEdit() {
   form.value = {
     weight: "",
     height: "",
-    td: "",
-    gds: "",
-    gdp: ""
   }
   isEditing.value = false;
 
@@ -321,7 +236,7 @@ function cancelEdit() {
 // Delete Data
 async function deleteData(id) {
   try {
-    const response = await fetch(`https://api.kaderpintar.id/api/ptm/${id}`, {
+    const response = await fetch(`https://api.kaderpintar.id/api/gizi/${id}`, {
       method: 'DELETE',
     });
 
@@ -380,4 +295,33 @@ function formatDate(dateString) {
 
   return formattedDate;
 }
+
+function calculateAgeInMonths(birthDate) {
+  const today = new Date();
+  const birthDateObj = new Date(birthDate);
+
+  const yearDiff = today.getFullYear() - birthDateObj.getFullYear();
+  const monthDiff = today.getMonth() - birthDateObj.getMonth();
+  const dayDiff = today.getDate() - birthDateObj.getDate();
+
+  let ageInMonths = yearDiff * 12 + monthDiff;
+  
+  // If the birth date hasn't passed this year yet, subtract 1 month
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    ageInMonths--;
+  }
+
+  return ageInMonths;
+}
+watch(() => form.value.user_id, (newUserId) => {
+  if (newUserId) {
+    const selectedUser = userOptions.value.find(user => user.id === newUserId.id);
+    if (selectedUser) {
+      form.value.age = calculateAgeInMonths(selectedUser.birth_date);
+    }
+  } else {
+    form.value.age = ""; // Reset age jika tidak ada user yang dipilih
+  }
+});
+
 </script>
