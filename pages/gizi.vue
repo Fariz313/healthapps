@@ -218,7 +218,7 @@ const isFetchingUsers = ref(false);
 async function fetchRecords() {
   try {
 
-    const request = await fetch('http://localhost:8000/api/gizi');
+    const request = await fetch('https://api.kaderpintar.id/api/gizi');
     const response = await request.json();;
     records.value = response.data.data;
     console.log("data in");
@@ -234,7 +234,7 @@ async function fetchUsers(query) {
   if (!query) return;
   isFetchingUsers.value = true;
   try {
-    const response = await fetch(`http://localhost:8000/api/users?search=${query}`);
+    const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
     const data = await response.json();
     userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name, birth_date: user.birth_date }));
 
@@ -260,8 +260,8 @@ async function fetchUsers(query) {
 async function saveData() {
   try {
     const url = isEditing.value
-      ? `http://localhost:8000/api/gizi/${form.value.id}`
-      : 'http://localhost:8000/api/gizi';
+      ? `https://api.kaderpintar.id/api/gizi/${form.value.id}`
+      : 'https://api.kaderpintar.id/api/gizi';
 
     const method = isEditing.value ? 'PUT' : 'POST';
     let body = form.value
@@ -300,7 +300,7 @@ function cancelEdit() {
 // Delete Data
 async function deleteData(id) {
   try {
-    const response = await fetch(`http://localhost:8000/api/gizi/${id}`, {
+    const response = await fetch(`https://api.kaderpintar.id/api/gizi/${id}`, {
       method: 'DELETE',
     });
 

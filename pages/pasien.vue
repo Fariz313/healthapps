@@ -230,7 +230,7 @@ async function getData() {
 
   try {
     const response = await useFetch(
-      `http://localhost:8000/api/users?search=${searchKey.value}&page=${pagination.value.current_page}`,
+      `https://api.kaderpintar.id/api/users?search=${searchKey.value}&page=${pagination.value.current_page}`,
       {
         method: 'GET',
         signal: abortController.signal,
@@ -310,8 +310,8 @@ async function saveData(event) {
 
   try {
     const url = isEditing.value
-      ? `http://localhost:8000/api/users/${currentData.value.id}` // Update existing user
-      : "http://localhost:8000/api/users"; // Add new user
+      ? `https://api.kaderpintar.id/api/users/${currentData.value.id}` // Update existing user
+      : "https://api.kaderpintar.id/api/users"; // Add new user
 
     const method = isEditing.value ? "PUT" : "POST";
 
