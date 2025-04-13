@@ -22,10 +22,11 @@
                                     <nav class="navigation">
                                         <ul class="nav menu">
                                             <li class="active"><router-link to="/">Home</router-link></li>
-                                            <li class=""><router-link to="/pasien">Pasien</router-link></li>
-                                            <li class=""><router-link to="/ptm">Skrining PTM</router-link></li>
-                                            <li class=""><router-link to="/pregnant">Skrining Ibu Hamil</router-link></li>
-                                            <li class=""><router-link to="/gizi">Skrining Gizi</router-link></li>
+
+                                            <li v-if="isLoggedIn" class=""><router-link to="/pasien">Pasien</router-link></li>
+                                            <li v-if="isLoggedIn" class=""><router-link to="/ptm">Skrining PTM</router-link></li>
+                                            <li v-if="isLoggedIn" class=""><router-link to="/pregnant">Skrining Ibu Hamil</router-link></li>
+                                            <li v-if="isLoggedIn" class=""><router-link to="/gizi">Skrining Gizi</router-link></li>
                                         </ul>
                                     </nav>
                                 </div>

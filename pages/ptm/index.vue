@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-5">
-    <h1 class="mb-4">Data Gizi Anak</h1>
+    <h1 class="mb-4">Data PTM</h1>
 
     <!-- Form Tambah/Edit Data -->
     <div class="card mb-4">
@@ -23,8 +23,7 @@
             <!-- Numeric Fields -->
             <div class="col-md-4" v-for="field in numericFields" :key="field.name">
               <label :for="field.name" class="form-label">{{ field.label }}</label>
-              <input v-model="form[field.name]" :readonly="field.readonly" type="number" step="0.1" class="form-control"
-                :id="field.name">
+              <input v-model="form[field.name]" type="number" step="0.1" class="form-control" :id="field.name">
             </div>
 
             <!-- Boolean Fields -->
@@ -83,6 +82,96 @@
           </div>
           <div class="modal-body">
             <template v-if="(selectedRecord)">
+              <div v-if="(selectedRecord.BP < 120 && selectedRecord.BP2 < 80)" class="alert alert-success" role="alert">
+                <b>Tekanan Darah Normal Pertahankan !</b>
+              </div>
+              <div v-else-if="selectedRecord.BP < 140 && selectedRecord.BP2 < 90" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi</b>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                  <li>Pembatasan intake natrium <br>
+                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
+                  </li>
+                  <li>
+                    Aktifitas fisik aerobik
+                    <br>
+                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
+                  </li>
+                  <li>
+                    Pembatasan konsumsi alkohol
+                    <br>
+                    max 30ml bagi laki-laki
+                    <br>
+                    max 20ml bagi perempuan
+                  </li>
+                  <li>
+                    Pembatasan merokok
+                  </li>
+                </ol>
+              </div>
+              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi</b>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                  <li>Pembatasan intake natrium <br>
+                    Kurangi 2,0 gr natrium atau 1 sendok teh garam per hari
+                  </li>
+                  <li>
+                    Aktifitas fisik aerobik
+                    <br>
+                    Aktifitas fisik aerobik yang teratur 20-30 menit dengan frekuensi 2-3 kali seminggu
+                  </li>
+                  <li>
+                    Pembatasan konsumsi alkohol
+                    <br>
+                    max 30ml bagi laki-laki
+                    <br>
+                    max 20ml bagi perempuan
+                  </li>
+                  <li>
+                    Pembatasan merokok
+                  </li>
+                </ol>
+                <p>Segera kunjungi fasilitas kesehatan jika 2 minggu pasca modifikasi gaya hidup target tekanan darah
+                  tidak tercapai</p>
+              </div>
+              <div v-else-if="selectedRecord.BP < 160 && selectedRecord.BP2 < 100" class="alert alert-warning"
+                role="alert">
+                <b>Pre Hipertensi grade 2</b>
+                <p>Segera datangi fasilitas kesehatan untuk mendapat pengobatan dari dokter</p>
+                <ol>
+                  <li>Dilakukan pengobatan & pengawasan oleh dokter</li>
+                </ol>
+                <p>Anjuran Perubahan Gaya Hidup</p>
+                <ol>
+                  <li>
+                    Penurunan Berat Badan
+                    <br>
+                    Jaga berat badan ideal IMT: 18.5 - 22.9 kg/m2
+                  </li>
+                  <li>
+                    Diet Tinggi serat dan rendah lemak (DASH)
+                  </li>
+                </ol>
+              </div>
               <p><strong>Pasien:</strong> {{ selectedRecord.name }}</p>
               <p><strong>Recorded By:</strong> {{ selectedRecord.recorded_by }}</p>
               <p><strong>Tanggal:</strong> {{ formatDate(selectedRecord.created_at) }}</p>
@@ -94,78 +183,11 @@
                   </p>
                 </div>
               </template>
-
-              <h4>Hasil Kalkulasi & Rekomendasi:</h4>
-              <ul>
-                <li>
-                  <div>
-                    <b>Berat Badan
-                      menurut Umur :</b>
-                    <p v-if="selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m3sd">
-                      Berat badan sangat
-                      kurang (severely
-                      underweight)
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      Berat badan kurang
-                      (underweight)
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      Berat badan normal
-                    </p>
-                    <p v-else>
-                      Risiko Berat badan lebih
-                    </p>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <b>Panjang Badan
-                      atau Tinggi Badan
-                      menurut Umur :</b>
-                    <p v-if="selectedRecord.height < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
-                      Sangat Pendek
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      Pendek
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      Normal
-                    </p>
-                    <p v-else>
-                      Tinggi
-                    </p>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <b>Indeks Massa
-                      Tubuh menurut
-                      Umurr :</b>
-                      <p v-if="(selectedRecord.weight/selectedRecord.height) < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
-                      Gizi Buruk
-                    </p>
-                    <p
-                      v-else-if="(selectedRecord.weight/selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && (selectedRecord.weight/selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      Gizi Kurang
-                    </p>
-                    <p
-                      v-else-if="(selectedRecord.weight/selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && (selectedRecord.weight/selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      Gizi Lebih
-                    </p>
-                    <p v-else>
-                      Obesitas
-                    </p>
-                  </div>
-                </li>
-              </ul>
             </template>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-outline-primary" @click="copyLink">Copy Link</button>
+            <button type="button" class="btn btn-outline-success" @click="shareLink">Share Link</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
           </div>
         </div>
@@ -180,9 +202,12 @@ import VueMultiselect from 'vue-multiselect';
 const selectedUser = ref(null);
 // Fields configuration
 const numericFields = ref([
-  { unit: "Kg", name: 'weight', label: 'Berat', readonly: false },
-  { unit: "Cm", name: 'height', label: 'Tinggi', readonly: false },
-  { unit: "bulan", name: 'age', label: 'Usia saat ini', readonly: true, custom: 'usia' }
+  { unit: "Kg", name: 'weight', label: 'Berat' },
+  { unit: "Cm", name: 'height', label: 'Tinggi' },
+  { unit: "mmhg", name: 'BP', label: 'Tekanan sistolik' },
+  { unit: "mmhg", name: 'BP2', label: 'Tekanan diastolik' },
+  { unit: "", name: 'GDS', label: 'GDS' },
+  { unit: "", name: 'GDP', label: 'GDP' }
 ]);
 const selectedRecord = ref(null);
 
@@ -194,7 +219,10 @@ const records = ref([]);
 const form = ref({
   weight: "",
   height: "",
-  age: "",
+  BP: "",
+  BP2: "",
+  GDS: "",
+  GDP: ""
 });
 const isEditing = ref(false);
 function calculatePoints(record) {
@@ -217,10 +245,14 @@ const isFetchingUsers = ref(false);
 // Fetch all records from API
 async function fetchRecords() {
   try {
-
-    const request = await fetch('https://api.kaderpintar.id/api/gizi');
-    const response = await request.json();;
-    records.value = response.data.data;
+    const response = await useFetch('https://api.kaderpintar.id/api/ptm');
+    const recordsWithPoints = response.data.value?.data.data.map(record => {
+      return {
+        ...record,
+        totalPoints: calculatePoints(record),
+      };
+    });
+    records.value = recordsWithPoints;
     console.log("data in");
     console.log("data", records.value);
 
@@ -236,17 +268,7 @@ async function fetchUsers(query) {
   try {
     const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
     const data = await response.json();
-    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name, birth_date: user.birth_date }));
-
-    console.log("KEPILIH", form.value.user_id);
-
-    // Jika pasien sudah dipilih, hitung usia dalam bulan
-    if (form.value.user_id) {
-      const selectedUser = userOptions.value.find(user => user.id === form.value.user_id.id);
-      if (selectedUser) {
-        form.value.age = calculateAgeInMonths(selectedUser.birth_date);
-      }
-    }
+    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name }));
 
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -255,13 +277,12 @@ async function fetchUsers(query) {
   }
 }
 
-
 // Save or update data
 async function saveData() {
   try {
     const url = isEditing.value
-      ? `https://api.kaderpintar.id/api/gizi/${form.value.id}`
-      : 'https://api.kaderpintar.id/api/gizi';
+      ? `https://api.kaderpintar.id/api/ptm/${form.value.id}`
+      : 'https://api.kaderpintar.id/api/ptm';
 
     const method = isEditing.value ? 'PUT' : 'POST';
     let body = form.value
@@ -293,6 +314,9 @@ function cancelEdit() {
   form.value = {
     weight: "",
     height: "",
+    td: "",
+    gds: "",
+    gdp: ""
   }
   isEditing.value = false;
 
@@ -300,7 +324,7 @@ function cancelEdit() {
 // Delete Data
 async function deleteData(id) {
   try {
-    const response = await fetch(`https://api.kaderpintar.id/api/gizi/${id}`, {
+    const response = await fetch(`https://api.kaderpintar.id/api/ptm/${id}`, {
       method: 'DELETE',
     });
 
@@ -360,88 +384,32 @@ function formatDate(dateString) {
   return formattedDate;
 }
 
-function calculateAgeInMonths(birthDate) {
-  const today = new Date();
-  const birthDateObj = new Date(birthDate);
+const showQr = ref(false);
+const runtimeConfig = useRuntimeConfig();
 
-  const yearDiff = today.getFullYear() - birthDateObj.getFullYear();
-  const monthDiff = today.getMonth() - birthDateObj.getMonth();
-  const dayDiff = today.getDate() - birthDateObj.getDate();
-
-  let ageInMonths = yearDiff * 12 + monthDiff;
-
-  // If the birth date hasn't passed this year yet, subtract 1 month
-  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-    ageInMonths--;
-  }
-
-  return ageInMonths;
+function getDetailLink() {
+  const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
+  return `${baseUrl}/ptm/${selectedRecord.value?.id}`;
 }
-watch(() => form.value.user_id, (newUserId) => {
-  if (newUserId) {
-    const selectedUser = userOptions.value.find(user => user.id === newUserId.id);
-    if (selectedUser) {
-      form.value.age = calculateAgeInMonths(selectedUser.birth_date);
-    }
+
+function copyLink() {
+  const link = getDetailLink();
+  navigator.clipboard.writeText(link)
+    .then(() => alert('Link berhasil disalin!'))
+    .catch(err => alert('Gagal menyalin: ' + err));
+}
+
+function shareLink() {
+  const link = getDetailLink();
+  if (navigator.share) {
+    navigator.share({
+      title: 'Detail Data Pasien',
+      text: 'Lihat detail data pasien di link berikut:',
+      url: link
+    }).catch(err => alert('Gagal membagikan: ' + err));
   } else {
-    form.value.age = ""; // Reset age jika tidak ada user yang dipilih
-  }
-});
-
-const BBPB_L = ref({});
-const BBPB_P = ref({});
-const BBTB_L = ref({});
-const BBTB_P = ref({});
-const BBU_L = ref({});
-const BBU_P = ref({});
-const IMTU_L = ref({});
-const IMTU_P = ref({});
-const TBU_L = ref({});
-const TBU_P = ref({});
-async function fetchCalculate() {
-  try {
-    const BBPB_L_req = await fetch('/assets/json/gizi/BBPB_L.json');
-    const BBPB_P_req = await fetch('/assets/json/gizi/BBPB_P.json');
-    const BBTB_L_req = await fetch('/assets/json/gizi/BBTB_L.json');
-    const BBTB_P_req = await fetch('/assets/json/gizi/BBTB_P.json');
-    const BBU_L_req = await fetch('/assets/json/gizi/BBU_L.json');
-    const BBU_P_req = await fetch('/assets/json/gizi/BBU_P.json');
-    const IMTU_L_req = await fetch('/assets/json/gizi/IMTU_L.json');
-    const IMTU_P_req = await fetch('/assets/json/gizi/IMTU_P.json');
-    const TBU_L_req = await fetch('/assets/json/gizi/TBU_L.json');
-    const TBU_P_req = await fetch('/assets/json/gizi/TBU_P.json');
-    BBPB_L.value = await BBPB_L_req.json();
-    BBPB_P.value = await BBPB_P_req.json();
-    BBTB_L.value = await BBTB_L_req.json();
-    BBTB_P.value = await BBTB_P_req.json();
-    BBU_L.value = await BBU_L_req.json();
-    BBU_P.value = await BBU_P_req.json();
-    IMTU_L.value = await IMTU_L_req.json();
-    IMTU_P.value = await IMTU_P_req.json();
-    TBU_L.value = await TBU_L_req.json();
-    TBU_P.value = await TBU_P_req.json();
-
-  } catch (error) {
-    console.error('Error fetching BBPB_L.json:', error);
-    return null;
+    alert('Fitur berbagi tidak didukung di perangkat ini.');
   }
 }
-function searchByKey(data, key, searchValue) {
-  // console.log(data);
-
-  return data.filter(item => {
-    // Jika nilai dari key adalah string, lakukan pencarian case-insensitive
-    if (typeof item[key] === 'string') {
-      return item[key].toLowerCase().includes(searchValue.toLowerCase());
-    }
-    // Jika nilai dari key adalah number, lakukan pencarian exact match
-    return item[key] === searchValue;
-  })[0];
-}
-console.log("getrecord");
-await fetchRecords(); // Refresh data
-console.log("getrecord done");
-
-fetchCalculate();
 
 </script>

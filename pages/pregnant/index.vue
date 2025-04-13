@@ -131,6 +131,8 @@
                         </template>
                     </div>
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-primary" @click="copyLink">Copy Link</button>
+                        <button type="button" class="btn btn-outline-success" @click="shareLink">Share Link</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     </div>
                 </div>
@@ -142,6 +144,8 @@
 <script setup>
 import { ref } from 'vue';
 import VueMultiselect from 'vue-multiselect';
+const runtimeConfig = useRuntimeConfig();
+
 const selectedUser = ref(null);
 // Fields configuration
 const numericFields = ref([
@@ -236,8 +240,6 @@ async function fetchRecords() {
             };
         });
         records.value = recordsWithPoints;
-        console.log("data in");
-        console.log("data", records.value);
 
     } catch (error) {
         console.error("Error fetching records:", error);
@@ -384,5 +386,31 @@ function formatDate(dateString) {
     const formattedDate = wibDate.toLocaleString('en-GB', options).replace(',', '');
 
     return formattedDate;
+}
+
+
+function getDetailLink() {
+  const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
+  return `${baseUrl}/pregnant/${selectedRecord.value?.id}`;
+}
+
+function copyLink() {
+  const link = getDetailLink();
+  navigator.clipboard.writeText(link)
+    .then(() => alert('Link berhasil disalin!'))
+    .catch(err => alert('Gagal menyalin: ' + err));
+}
+
+function shareLink() {
+  const link = getDetailLink();
+  if (navigator.share) {
+    navigator.share({
+      title: 'Detail Data Pasien',
+      text: 'Lihat detail data pasien di link berikut:',
+      url: link
+    }).catch(err => alert('Gagal membagikan: ' + err));
+  } else {
+    alert('Fitur berbagi tidak didukung di perangkat ini.');
+  }
 }
 </script>
