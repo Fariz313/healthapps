@@ -391,7 +391,7 @@ function formatDate(dateString) {
 
 function getDetailLink() {
   const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
-  return `${baseUrl}/pregnant/${selectedRecord.value?.id}`;
+  return `${baseUrl}/pregnant/detail?id=${selectedRecord.value?.id}`;
 }
 
 function copyLink() {

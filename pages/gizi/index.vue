@@ -449,7 +449,7 @@ fetchCalculate();
 
 function getDetailLink() {
   const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
-  return `${baseUrl}/gizi/${selectedRecord.value?.id}`;
+  return `${baseUrl}/gizi/detail?id=${selectedRecord.value?.id}`;
 }
 
 function copyLink() {

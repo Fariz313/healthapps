@@ -108,7 +108,7 @@ import QrcodeVue from 'qrcode.vue'
 const route = useRoute()
 const { public: config } = useRuntimeConfig()
 
-const id = route.params.id
+const id = route.query.id
 // Fields configuration
 const numericFields = ref([
   { unit: "Kg", name: 'weight', label: 'Berat', readonly: false },

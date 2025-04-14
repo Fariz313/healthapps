@@ -127,12 +127,6 @@ import axios from 'axios'
 const route = useRoute()
 const { public: config } = useRuntimeConfig()
 
-const id = route.params.id
-const url = ref(`${config.siteUrl}/ptm/${id}`)
-console.log("TEST");
-const data = await axios.get(`https://api.kaderpintar.id/api/ptm/${id}`)
-console.log(data);
-const record = data.data
 
 const numericFields = [
   { name: 'weight', label: 'Berat', unit: 'Kg' },
@@ -142,6 +136,30 @@ const numericFields = [
   { name: 'GDS', label: 'GDS', unit: '' },
   { name: 'GDP', label: 'GDP', unit: '' }
 ]
+const booleanFields = ref([]);
+
+const allFields = ref([...numericFields, ...booleanFields.value]);
+function calculatePoints(record) {
+  let totalPoints = 0;
+
+  booleanFields.value.forEach(field => {
+    if (record[field.name] === 1) {
+      totalPoints += field.point;
+    }
+  });
+
+  return totalPoints;
+}
+const id = route.query.id
+const url = ref(`${config.siteUrl}/ptm/${id}`)
+console.log("TEST");
+const data = await axios.get(`https://api.kaderpintar.id/api/ptm/${id}`)
+console.log(data);
+const record = {
+  ...data.data,
+  totalPoints: calculatePoints(data.data)
+}
+
 
 function formatDate(dateString) {
   const date = new Date(dateString)

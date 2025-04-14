@@ -389,7 +389,7 @@ const runtimeConfig = useRuntimeConfig();
 
 function getDetailLink() {
   const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
-  return `${baseUrl}/ptm/${selectedRecord.value?.id}`;
+  return `${baseUrl}/ptm/detail?id=${selectedRecord.value?.id}`;
 }
 
 function copyLink() {
