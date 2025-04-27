@@ -3,17 +3,15 @@
         <!-- Slider Area -->
         <section class="slider">
             <div class="hero-slider">
-                <div class="single-slider" style="background-image:url('/assets/img/slider2.jpg')">
+                <div class="single-slider imgbackground">
                     <div class="container">
-                        <div class="row">
+                        <div class="row flex-row-reverse">
                             <div class="col-lg-7">
-                                <div class="text">
+                                <div class="text text-right">
                                     <h1> <span>Pelayanan</span> Pintar <br> Kesehatan Masyarakat</h1>
-                                    <p>Puskesmas menyediakan layanan kesehatan dasar bagi masyarakat, termasuk
+                                    <p>Puskesmas menyediakan layanan kesehatan dasar bagi masyarakat, 
+                                        <br>termasuk
                                         imunisasi, pemeriksaan kehamilan, dan konsultasi gizi.</p>
-                                    <div class="button">
-                                        <a href="#" class="btn primary">Pelajari Lebih Lanjut</a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -38,7 +36,6 @@
                                         <h4>Kasus Darurat</h4>
                                         <p>Puskesmas menyediakan layanan gawat darurat untuk masyarakat dalam kondisi
                                             kesehatan yang memerlukan tindakan cepat.</p>
-                                        <a href="#">BACA SELENGKAPNYA<i class="fa fa-long-arrow-right"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -54,7 +51,6 @@
                                         <h4>Pelayanan Medis</h4>
                                         <p>Setiap hari kerja, dokter puskesmas siap melayani pasien untuk pemeriksaan
                                             kesehatan dan konsultasi.</p>
-                                        <a href="#">BACA SELENGKAPNYA<i class="fa fa-long-arrow-right"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -69,11 +65,12 @@
                                         <span>Jam Operasional</span>
                                         <h4>Pelayanan Puskesmas</h4>
                                         <ul class="time-sidual">
-                                            <li class="day">Senin - Jumat <span>08.00 - 16.00</span></li>
-                                            <li class="day">Sabtu <span>08.00 - 12.00</span></li>
-                                            <li class="day">Minggu <span>Tutup</span></li>
+                                            <li class="day">Senin - Kamis <span>08.00 - 15.00</span></li>
+                                            <li class="day">Jumat <span>08.00 - 14.30</span></li>
+                                            <li class="day">Sabtu <span>08.00 - 14.00</span></li>
+                                            <li class="day">Minggu <span>Libur</span></li>
                                         </ul>
-                                        <a href="#">BACA SELENGKAPNYA<i class="fa fa-long-arrow-right"></i></a>
+                                        <!-- <a href="#">BACA SELENGKAPNYA<i class="fa fa-long-arrow-right"></i></a> -->
                                     </div>
                                 </div>
                             </div>
@@ -134,7 +131,31 @@
         </section>
         <!--/ End Fitur -->
 
-        
+
 
     </div>
 </template>
+<style>
+.imgbackground {
+    background-image: 
+        /* Gradient atas-bawah (transparan di atas & bawah) */
+        linear-gradient(to bottom, 
+            rgba(255, 255, 255, 0.8), 
+            rgba(255, 255, 255, 0) 15%,
+            rgba(255, 255, 255, 0) 85%,
+            rgba(255, 255, 255, 0.8) 100%),
+        
+        /* Gradient kiri-kanan (transparan di kiri, solid di kanan) */
+        linear-gradient(to right, 
+            rgba(255, 255, 255, 0), 
+            rgba(255, 255, 255, 0) 20%, 
+            rgba(255, 255, 255, 0.9) 50%),
+        
+        /* Gambar asli */
+        url('/assets/img/puskesmas.jpeg');
+    
+    background-size: cover;
+    height: 100vh;
+    width: 100%;
+}
+</style>

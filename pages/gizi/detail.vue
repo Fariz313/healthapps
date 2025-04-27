@@ -25,18 +25,18 @@
               <div>
                 <b>Berat Badan
                   menurut Umur :</b>
-                <p v-if="selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age)?.m3sd">
+                <p v-if="selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m3sd">
                   Berat badan sangat
                   kurang (severely
                   underweight)
                 </p>
                 <p
-                  v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age)?.m3sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age)?.m2sd">
+                  v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
                   Berat badan kurang
                   (underweight)
                 </p>
                 <p
-                  v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age)?.m2sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age)?.p1sd">
+                  v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
                   Berat badan normal
                 </p>
                 <p v-else>
@@ -49,15 +49,15 @@
                 <b>Panjang Badan
                   atau Tinggi Badan
                   menurut Umur :</b>
-                <p v-if="selectedRecord.height < searchByKey(TBU_L, 'age', selectedRecord.age)?.m3sd">
+                <p v-if="selectedRecord.height < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
                   Sangat Pendek
                 </p>
                 <p
-                  v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age)?.m3sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age)?.m2sd">
+                  v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
                   Pendek
                 </p>
                 <p
-                  v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age)?.m2sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age)?.p1sd">
+                  v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
                   Normal
                 </p>
                 <p v-else>
@@ -70,21 +70,158 @@
                 <b>Indeks Massa
                   Tubuh menurut
                   Umurr :</b>
-                <p
-                  v-if="(selectedRecord.weight / selectedRecord.height) < searchByKey(TBU_L, 'age', selectedRecord.age)?.m3sd">
-                  Gizi Buruk
-                </p>
-                <p
-                  v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age)?.m3sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age)?.m2sd">
-                  Gizi Kurang
-                </p>
-                <p
-                  v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age)?.m2sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age)?.p1sd">
-                  Gizi Lebih
-                </p>
-                <p v-else>
-                  Obesitas
-                </p>
+                <div
+                  v-if="(selectedRecord.weight / selectedRecord.height) < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
+                  <div class="aler alert-danger p-1 rounded">
+                    <b>Gizi Sangat Kurang/stunting </b>
+                    <p>
+                      Pemberian makanan yang baik pada anak gizi kurang adalah dengan meningkatkan asupan makanan
+                      tinggi
+                      protein hewani pada anak 2 kali lipat/porsi, dan lanjutkan pemberian makanan bergizi pada anak
+                      dengan memberikan makanan selingan/ cemilan 2 kali diantara makan berat ( 2 jam sebelum makan
+                      berat).
+                      Note : butuh penanganan lebih lanjut (beri icon alaram/!) lakukan konsultasi dan pemeriksaan
+                      kondisi
+                      anak kepada ahli gizi di puskesmas & bidan desa, atau DM ke instagram puskesmas setu
+                      <br>
+                      <b>
+                        <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
+                          <b>
+                            https://www.instagram.com/puskesmas_setu1
+                          </b>
+                        </a>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
+                  <div class="aler alert-danger p-1 rounded">
+                    <b>Gizi Kurang </b>
+                    <p>
+                      Pemberian makanan yang baik pada anak gizi kurang adalah dengan meningkatkan asupan makanan
+                      tinggi
+                      protein hewani pada anak 2,5 kali lipat/porsi, dan lanjutkan pemberian makanan bergizi pada
+                      anak
+                      dengan memberikan makanan selingan/ cemilan 2 kali diantara makan berat (2 jam sebelum makan
+                      berat).
+                      Note : butuh penanganan lebih lanjut (beri icon alaram/!) lakukan konsultasi dan pemeriksaan
+                      kondisi
+                      anak kepada ahli gizi di puskesmas & bidan desa, atau DM ke instagram puskesmas setu <br>
+                      <b>
+                        <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
+                          <b>
+                            https://www.instagram.com/puskesmas_setu1
+                          </b>
+                        </a>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div
+                  v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
+                  <div class="aler alert-success p-1 rounded">
+                    <b>Gizi Normal </b>
+                    <p>
+                      - Pemberian makanan untuk anak gizi normal dengan pertahankan pemberian makanan, dan lanjutkan
+                      pemberian gizi seimbang pada anak.
+                      - komposisi makanan : karbohidrat, protein (hewani, nabati), lemak, vitamin, mineral <br>
+                      <b>
+                        <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
+                          <b>
+                            https://www.instagram.com/puskesmas_setu1
+                          </b>
+                        </a>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div v-else>
+                  <div class="aler alert-danger p-1 rounded">
+                    <b>Gizi Berlebih / Obesitas </b>
+                    <p>
+                      Diet yang dilakukan dengan mengurangi asupan makanan/ minuman yang manis dengan kadar gula
+                      tinggi
+                      (seperti mengandung glukosa, sukrosa, fruktosa). Biarkan anak untuk lebih banyakakyivitas
+                      fisik
+                      seperti bermain di luar rumah dan kurang penggunaan hp pada anak <br>
+                      <b>
+                        <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
+                          <b>
+                            https://www.instagram.com/puskesmas_setu1
+                          </b>
+                        </a>
+                      </b>
+                    </p>
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <h4>Panduan Makanan</h4>
+                  <p><b>Karbohidrat</b></p>
+                  <p>1 porsi nasi = ¾ gelas belimbing</p>
+                  <p>Bisa diganti dengan:</p>
+                  <ul>
+                    <li>Bihun 50 gr = ½ gelas belimbing</li>
+                    <li>Jagung segar 45 gr = 3 buah sedang</li>
+                    <li>Kentang 210 gr = 2 buah sedang</li>
+                    <li>Singkong 120 gr = 1½ potong sedang</li>
+                    <li>Makaroni 50 gr = ½ gelas belimbing</li>
+                    <li>Mie 50 gr = 1 gelas belimbing</li>
+                    <li>Roti 70 gr = 3 sisir</li>
+                  </ul>
+
+                  <p><b>Protein Hewani</b></p>
+                  <p>1 porsi setara dengan:</p>
+                  <ul>
+                    <li>Ikan segar 40 gr = 1 potong sedang</li>
+                    <li>Daging sapi 35 gr = 1 potong sedang</li>
+                    <li>Hati sapi 50 gr = 1 potong sedang</li>
+                    <li>Telur ayam 55 gr = 1 butir</li>
+                    <li>Udang 35 gr = 5 ekor ukuran sedang</li>
+                    <li>Susu sapi 200 ml = 1 gelas belimbing</li>
+                  </ul>
+
+                  <p><b>Protein Nabati</b></p>
+                  <p>1 porsi setara dengan:</p>
+                  <ul>
+                    <li>Tempe 50 gr = 2 potong sedang</li>
+                    <li>Kacang hijau 25 gr = 2½ sendok makan</li>
+                    <li>Tahu 100 gr = 2 potong sedang</li>
+                    <li>Oncom 50 gr = 2 potong besar</li>
+                    <li>Kembang tahu 20 gr = 1 lembar</li>
+                  </ul>
+
+                  <p><b>Lemak</b></p>
+                  <p>1 porsi setara dengan:</p>
+                  <ul>
+                    <li>Cumi-cumi 45 gr = 1 ekor kecil</li>
+                    <li>Daging ayam 40 gr = 1 potong sedang</li>
+                    <li>Ikan kembung 30 gr = ⅓ ekor sedang</li>
+                    <li>Ikan lele 40 gr = ⅓ ekor sedang</li>
+                    <li>Kerang 90 gr = ½ gelas belimbing</li>
+                    <li>Putih telur 65 gr = 2 butir</li>
+                    <li>Telur puyuh 55 gr = 5 butir</li>
+                  </ul>
+
+                  <p><b>Sayuran</b></p>
+                  <ul>
+                    <li>1 porsi = 100 gr atau 1 gelas sayuran setelah dimasak/ditiriskan</li>
+                  </ul>
+
+                  <p><b>Buah-buahan</b></p>
+                  <p>1 porsi setara dengan:</p>
+                  <ul>
+                    <li>Pisang Ambon 50 gr = 1 buah ukuran sedang</li>
+                    <li>Alpukat 50 gr = ½ buah ukuran besar</li>
+                    <li>Apel 85 gr = 1 buah kecil</li>
+                    <li>Jambu 100 gr = 1 buah sedang</li>
+                    <li>Jeruk 100 gr = 2 buah ukuran sedang</li>
+                    <li>Mangga 90 gr = ¾ buah ukuran sedang</li>
+                    <li>Melon 90 gr = 1 potong ukuran sedang</li>
+                    <li>Pepaya 150 gr = 1 potong ukuran besar</li>
+                  </ul>
+
+                </div>
               </div>
             </li>
           </ul>
@@ -93,7 +230,7 @@
       <div class="modal-footer">
         <div class="mt-6">
           <span class="font-semibold text-base mb-2">Bagikan atau Simpan QR</span> <br>
-            <qrcode-vue :value="url" :size="150" />
+          <qrcode-vue :value="url" :size="150" />
         </div>
       </div>
     </div>
@@ -312,7 +449,7 @@ console.log("getrecord");
 await fetchRecords(); // Refresh data
 console.log("getrecord done");
 if (process.client) {
-fetchCalculate();
+  fetchCalculate();
 }
 </script>
 

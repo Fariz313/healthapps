@@ -1,6 +1,7 @@
 <template>
     <div class="container mt-5">
         <h1 class="mb-4">Data Ibu Hamil</h1>
+        <button class="btn bg-green">Export Excel</button>
 
         <!-- Form Tambah/Edit Data -->
         <div class="card mb-4">
@@ -81,6 +82,19 @@
                 </div>
             </div>
         </div>
+        <nav aria-label="Page navigation w-100" class="mt-4">
+            <ul class="pagination d-flex justify-content-center">
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+                </li>
+                <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: page === currentPage }">
+                    <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                </li>
+                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                    <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+                </li>
+            </ul>
+        </nav>
 
         <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">
@@ -118,20 +132,20 @@
                                 <div v-if="!['weight', 'height', 'age_at_pregnancy'].includes(field.name)">
                                     <p class="text-danger" v-if="(selectedRecord[field.name] == 1)"><strong
                                             class="text-dark">{{ field.label }}:</strong> {{
-                                                formatValue((selectedRecord[field.name]==1)) }}</p>
+                                                formatValue((selectedRecord[field.name] == 1)) }}</p>
                                     <p class="text-success" v-if="(selectedRecord[field.name] != 1)"><strong
                                             class="text-dark">{{ field.label }}:</strong> {{
-                                                formatValue((selectedRecord[field.name]==1)) }}</p>
+                                                formatValue((selectedRecord[field.name] == 1)) }}</p>
                                 </div>
                                 <div v-else>
-                                    <p> <strong>{{ field.label }} :</strong> {{ selectedRecord[field.name] }} {{ field.unit }}
+                                    <p> <strong>{{ field.label }} :</strong> {{ selectedRecord[field.name] }} {{
+                                        field.unit }}
                                     </p>
                                 </div>
                             </template>
                         </template>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-primary" @click="copyLink">Copy Link</button>
                         <button type="button" class="btn btn-outline-success" @click="shareLink">Share Link</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                     </div>
@@ -145,7 +159,9 @@
 import { ref } from 'vue';
 import VueMultiselect from 'vue-multiselect';
 const runtimeConfig = useRuntimeConfig();
-
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = ref(6);
 const selectedUser = ref(null);
 // Fields configuration
 const numericFields = ref([
@@ -156,30 +172,31 @@ const numericFields = ref([
 const selectedRecord = ref(null);
 
 const booleanFields = ref([
-    { unit: "", name: 'young_pregnant', label: 'Terlalu Muda Hamil di Usia < 16 Tahun', point: 4 },
-    { unit: "", name: 'old_pregnant', label: 'Terlalu Tua, Hamil di Usia > 35', point: 4 },
-    { unit: "", name: 'late_pregnant', label: 'Terlalu Lambat Hamil, kawin > 4 Tahun', point: 4 },
+    { unit: "", name: 'young_pregnant', label: 'Terlalu Muda Hamil di Usia ≤ 16 Tahun', point: 4 },
+    { unit: "", name: 'old_pregnant', label: 'Terlalu Tua, Hamil di Usia ≥ 35', point: 4 },
+    { unit: "", name: 'late_pregnant', label: 'Terlalu Lambat Hamil, kawin ≥ 4 Tahun', point: 4 },
     { unit: "", name: 'early_pregnant', label: 'Terlalu Cepat Hamil Lagi, < 2 Tahun', point: 4 },
-    //unit: "", { name: 'overlong_pregnant', label: 'Overlong Pregnant',point:4 },
-    { unit: "", name: 'much_child', label: 'Terlalu Banyak Anak > 4', point: 4 },
+    { unit: "", name: 'overlong_pregnant', label: 'Kehamilan lebih bulan', point: 4 },
+    { unit: "", name: 'much_child', label: 'Terlalu Banyak Anak ≥ 4', point: 4 },
     { unit: "", name: 'miscarriage', label: 'Pernah Keguguran', point: 4 },
-    { unit: "", name: 'vacum_birth', label: 'Vacum Birth', point: 4 },
-    { unit: "", name: 'retained_placenta', label: 'Retained Placenta', point: 4 },
-    { unit: "", name: 'tranfused', label: 'Transfused', point: 4 },
-    { unit: "", name: 'csection', label: 'C-Section', point: 8 },
+    { unit: "", name: 'vacum_birth', label: 'Tarikan Tang/Vacum', point: 4 },
+    { unit: "", name: 'retained_placenta', label: 'Uri Dirogoh', point: 4 },
+    { unit: "", name: 'tranfused', label: 'Diberi infus/Tranfusi', point: 4 },
+    { unit: "", name: 'csection', label: 'pernah Sesar', point: 8 },
     { unit: "", name: 'anemia', label: 'Anemia', point: 4 },
     { unit: "", name: 'malaria', label: 'Malaria', point: 4 },
     { unit: "", name: 'tbc', label: 'TBC', point: 4 },
-    { unit: "", name: 'hearth_failure', label: 'Heart Failure', point: 4 },
-    { unit: "", name: 'std', label: 'STD', point: 4 },
-    { unit: "", name: 'hypertension', label: 'Hypertension', point: 4 },
-    { unit: "", name: 'twin_birth', label: 'Twin Birth', point: 4 },
+    { unit: "", name: 'hearth_failure', label: 'Pernah gagal jantung', point: 4 },
+    { unit: "", name: 'std', label: ' Penyakit Menular Seksual (PMS)', point: 4 },
+    { unit: "", name: 'hypertension', label: 'Hyper Tensi (Tekanan Darah Tinggi)', point: 4 },
+    { unit: "", name: 'twin_birth', label: 'Kehamilan Kembar', point: 4 },
     { unit: "", name: 'hydranion', label: 'Hydranion', point: 4 },
-    { unit: "", name: 'over_pregnant', label: 'Over Pregnant', point: 4 },
+    { unit: "", name: 'over_pregnant', label: 'Hamil Lagi Terlalu Lama ≥ 10 Tahun', point: 4 },
     { unit: "", name: 'death_baby', label: 'Bayi Meninggal Dalam Kandungan', point: 4 },
     { unit: "", name: 'breech', label: 'Sungsang', point: 8 },
     { unit: "", name: 'oblique', label: 'Lintang', point: 8 },
-    { unit: "", name: 'preeklampsia', label: 'Preeklampsia', point: 8 },
+    { unit: "", name: 'preeklampsia', label: 'Preeklampsia Berat / Kejang-kejang', point: 8 },
+    { unit: "", name: 'diabetes', label: 'diabetes / Kencing Manis', point: 4 },
 ]);
 
 const allFields = ref([...numericFields.value, ...booleanFields.value]);
@@ -228,19 +245,25 @@ console.log(form.value);
 // User selection data
 const userOptions = ref([]);
 const isFetchingUsers = ref(false);
-
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchRecords();
+  }
+}
 // Fetch all records from API
 async function fetchRecords() {
     try {
-        const response = await useFetch('https://api.kaderpintar.id/api/pregnants');
-        const recordsWithPoints = response.data.value?.data.data.map(record => {
+        const response = await fetch(`https://api.kaderpintar.id/api/pregnants?page=${currentPage.value}`);
+        const data = await response.json();
+        const recordsWithPoints = data.data.data.map(record => {
             return {
                 ...record,
                 totalPoints: calculatePoints(record),
             };
         });
         records.value = recordsWithPoints;
-
+        totalPages.value = data.data.last_page;
     } catch (error) {
         console.error("Error fetching records:", error);
     }
@@ -272,6 +295,7 @@ async function saveData() {
         const method = isEditing.value ? 'PUT' : 'POST';
         let body = form.value
         body.user_id = form.value.user_id.id
+        body.recorded_by = await JSON.parse(localStorage.getItem('user')).id
         const data = await useFetch(url, {
             method,
             headers: {
@@ -390,27 +414,27 @@ function formatDate(dateString) {
 
 
 function getDetailLink() {
-  const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
-  return `${baseUrl}/pregnant/detail?id=${selectedRecord.value?.id}`;
+    const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
+    return `${baseUrl}/pregnant/detail?id=${selectedRecord.value?.id}`;
 }
 
 function copyLink() {
-  const link = getDetailLink();
-  navigator.clipboard.writeText(link)
-    .then(() => alert('Link berhasil disalin!'))
-    .catch(err => alert('Gagal menyalin: ' + err));
+    const link = getDetailLink();
+    navigator.clipboard.writeText(link)
+        .then(() => alert('Link berhasil disalin!'))
+        .catch(err => alert('Gagal menyalin: ' + err));
 }
 
 function shareLink() {
-  const link = getDetailLink();
-  if (navigator.share) {
-    navigator.share({
-      title: 'Detail Data Pasien',
-      text: 'Lihat detail data pasien di link berikut:',
-      url: link
-    }).catch(err => alert('Gagal membagikan: ' + err));
-  } else {
-    alert('Fitur berbagi tidak didukung di perangkat ini.');
-  }
+    const link = getDetailLink();
+    if (navigator.share) {
+        navigator.share({
+            title: 'Detail Data Pasien',
+            text: 'Lihat detail data pasien di link berikut:',
+            url: link
+        }).catch(err => alert('Gagal membagikan: ' + err));
+    } else {
+        alert('Fitur berbagi tidak didukung di perangkat ini.');
+    }
 }
 </script>

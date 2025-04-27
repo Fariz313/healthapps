@@ -36,9 +36,9 @@
                         placeholder="Masukkan nama lengkap">
                     </div>
                     <div class="col-md-4">
-                      <label for="email" class="form-label">Email</label>
-                      <input type="email" class="form-control" id="email" name="email" :value="currentData?.email"
-                        placeholder="Masukkan email">
+                      <label for="nik" class="form-label">NIK</label>
+                      <input type="nik" class="form-control" id="nik" name="nik" :value="currentData?.nik"
+                        placeholder="Masukkan nik">
                     </div>
                   </div>
 
@@ -49,12 +49,12 @@
                       <input type="date" class="form-control" id="birth_date" name="birth_date"
                         :value="currentData?.birth_date">
                     </div>
-                    <div class="col-md-4">
+                    <div v-if="typePasien=='child'" class="col-md-4">
                       <label for="mother_name" class="form-label">Nama Ibu</label>
                       <input type="text" class="form-control" id="mother_name" name="mother_name"
                         :value="currentData?.mother_name" placeholder="Masukkan nama ibu">
                     </div>
-                    <div class="col-md-4">
+                    <div v-if="typePasien=='child'" class="col-md-4">
                       <label for="father_name" class="form-label">Nama Ayah</label>
                       <input type="text" class="form-control" id="father_name" name="father_name"
                         :value="currentData?.father_name" placeholder="Masukkan nama ayah">
@@ -74,10 +74,17 @@
                         placeholder="Masukkan alamat">{{ currentData?.address }}</textarea>
                     </div>
                     <div class="col-md-4">
-                      <label v-if="typePasien=='anak'" for="parent_phone" class="form-label">Telepon Orang Tua</label>
-                      <label v-else for="phone" class="form-label">Telepon</label>
+                      <label v-if="typePasien=='anak'" for="parent_phone" class="form-label">nomor hp Orang Tua</label>
+                      <label v-else for="phone" class="form-label">Nomor HP</label>
                       <input type="tel" class="form-control" id="phone" name="phone" :value="currentData?.phone"
                         placeholder="Masukkan telepon">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="birth_date" class="form-label">Jenis Kelamin</label>
+                      <select class="form-control" name="gender" id="gender">
+                        <option value="L">laki-laki</option>
+                        <option value="P">perempuan</option>
+                      </select>
                     </div>
                   </div>
 
@@ -96,7 +103,7 @@
                   </div>
 
                   <!-- Baris 5: Usia Kehamilan, Jumlah Kehamilan, Perkiraan Lahir -->
-                  <div class="row mb-3">
+                  <div class="row mb-3" v-if="typePasien=='pregnant'">
                     <div class="col-md-4">
                       <label for="pregnant_age" class="form-label">Usia Kehamilan</label>
                       <input type="number" class="form-control" id="pregnant_age" name="pregnant_age"
@@ -108,7 +115,7 @@
                         :value="currentData?.pregnant_count" placeholder="Masukkan jumlah kehamilan">
                     </div>
                     <div class="col-md-4">
-                      <label for="estimated_birth" class="form-label">Perkiraan Lahir</label>
+                      <label for="estimated_birth" class="form-label">HPHT (hari pertama haid terakhir)</label>
                       <input type="date" class="form-control" id="estimated_birth" name="estimated_birth"
                         :value="currentData?.estimated_birth">
                     </div>
@@ -120,6 +127,16 @@
                       <label for="inspection" class="form-label">Pemeriksaan Terakhir</label>
                       <input type="date" class="form-control" id="inspection" name="inspection"
                         :value="currentData?.inspection">
+                    </div>
+                    <div class="col-md-6">
+                      <label for="inspection" class="form-label">Tempat Pemeriksaan</label>
+                      <input type="text" class="form-control" id="inspection_location" name="inspection_location"
+                        :value="currentData?.inspection_location">
+                    </div>
+                    <div class="col-md-6">
+                      <label for="inspection" class="form-label">Tempat Pemeriksaan</label>
+                      <input type="text" class="form-control" id="inspection_location" name="inspection_location"
+                        :value="currentData?.inspection_location">
                     </div>
                   </div>
                   <button type="submit" class="btn btn-primary">
@@ -150,7 +167,7 @@
             <div class="d-flex justify-content-between">
               <div>
                 <h5 class="card-title">{{ data.name }}</h5>
-                <p class="card-text"><small class="text-muted">{{ data.email }}</small></p>
+                <p class="card-text"><small class="text-muted">{{ data.nik }}</small></p>
               </div>
               <div>
                 <button class="btn mx-2 p-1 px-2">Hapus</button>
@@ -175,7 +192,7 @@
                 <p class="card-text"><strong>Pendidikan:</strong> {{ data.education }}</p>
                 <p class="card-text"><strong>Usia Kehamilan:</strong> {{ data.pregnant_age }}</p>
                 <p class="card-text"><strong>Jumlah Kehamilan:</strong> {{ data.pregnant_count }}</p>
-                <p class="card-text"><strong>Perkiraan Lahir:</strong> {{ data.estimated_birth }}</p>
+                <p class="card-text"><strong>HPHT (hari pertama haid terakhir):</strong> {{ data.estimated_birth }}</p>
                 <p class="card-text"><strong>Pemeriksaan Terakhir:</strong> {{ data.inspection }}</p>
                 <p class="card-text"><strong>Tipe:</strong> {{ data.type }}</p>
               </div>

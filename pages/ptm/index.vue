@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-5">
     <h1 class="mb-4">Data PTM</h1>
-
+<a class="btn bg-green" href="https://api.kaderpintar.id/api/ptm?export=true" target="_blank">Export Excel</a>
     <!-- Form Tambah/Edit Data -->
     <div class="card mb-4">
       <div class="card-body">
@@ -16,7 +16,7 @@
                 @search-change="fetchUsers" />
             </div>
             <div class="col-md-6">
-              <label for="recorded_by" class="form-label">Nama Pendata</label>
+              <label for="recorded_by" class="form-label">PKM</label>
               <input v-model="recorded_by" readonly type="text" class="form-control" id="recorded_by">
             </div>
 
@@ -54,7 +54,7 @@
           <div class="card-body">
             <h5 class="card-title">Pasien: {{ record.name }}</h5>
             <p class="card-text">
-              <strong>Petugas:</strong> {{ record.recorded_by }}<br>
+              <strong>PKM:</strong> {{ record.recorded_by }}<br>
               <strong>Tanggal:</strong> {{ formatDate(record.created_at) }}<br>
               <template v-for="field in allFields" :key="field.name">
                 <div>
@@ -72,6 +72,20 @@
         </div>
       </div>
     </div>
+    
+    <nav aria-label="Page navigation w-100" class="mt-4">
+      <ul class="pagination d-flex justify-content-center">
+        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+          <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+        </li>
+        <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: page === currentPage }">
+          <button class="page-link" @click="changePage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+          <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+        </li>
+      </ul>
+    </nav>
 
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl">
@@ -186,7 +200,6 @@
             </template>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-primary" @click="copyLink">Copy Link</button>
             <button type="button" class="btn btn-outline-success" @click="shareLink">Share Link</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
           </div>
@@ -197,7 +210,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import VueMultiselect from 'vue-multiselect';
 const selectedUser = ref(null);
 // Fields configuration
@@ -214,6 +227,10 @@ const selectedRecord = ref(null);
 const booleanFields = ref([]);
 
 const allFields = ref([...numericFields.value, ...booleanFields.value]);
+
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = ref(6);
 
 const records = ref([]);
 const form = ref({
@@ -241,21 +258,26 @@ console.log(form.value);
 // User selection data
 const userOptions = ref([]);
 const isFetchingUsers = ref(false);
-
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchRecords();
+  }
+}
 // Fetch all records from API
 async function fetchRecords() {
   try {
-    const response = await useFetch('https://api.kaderpintar.id/api/ptm');
-    const recordsWithPoints = response.data.value?.data.data.map(record => {
+    const response = await fetch(`https://api.kaderpintar.id/api/ptm?page=${currentPage.value}`);
+    const data = await response.json();
+    totalPages.value = data.data.last_page;
+    const recordsWithPoints = data.data.data.map(record => {
       return {
         ...record,
         totalPoints: calculatePoints(record),
       };
     });
-    records.value = recordsWithPoints;
-    console.log("data in");
-    console.log("data", records.value);
 
+    records.value = recordsWithPoints;
   } catch (error) {
     console.error("Error fetching records:", error);
   }
@@ -287,6 +309,7 @@ async function saveData() {
     const method = isEditing.value ? 'PUT' : 'POST';
     let body = form.value
     body.user_id = form.value.user_id.id
+    body.recorded_by = await JSON.parse(localStorage.getItem('user')).id
     const data = await useFetch(url, {
       method,
       headers: {
