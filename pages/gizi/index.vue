@@ -1,21 +1,30 @@
 <template>
   <div class="container mt-5">
     <h1 class="mb-4">Data Gizi Anak</h1>
-    <button class="btn bg-green">Export Excel</button>
+    <a class="btn bg-green" href="https://api.kaderpintar.id/api/gizi?export=true" target="_blank">Export Excel</a>
 
     <!-- Form Tambah/Edit Data -->
     <div class="card mb-4">
       <div class="card-body">
         <h5 class="card-title">{{ isEditing ? 'Edit Data' : 'Tambah Data Baru' }}</h5>
-        <form @submit.prevent="saveData">
+        <form @submit.prevent="handleSubmit">
           <div class="row g-3">
             <!-- User ID with VueMultiselect -->
             <div class="col-md-6">
               <label for="user_id" class="form-label">Pasien</label>
-              <VueMultiselect v-model="form.user_id" :options="userOptions" :searchable="true"
-                :loading="isFetchingUsers" label="name" track-by="id" placeholder="Cari user..."
-                @search-change="fetchUsers" />
+              <VueMultiselect 
+                v-model="form.user_id" 
+                :options="userOptions" 
+                :searchable="true"
+                :loading="isFetchingUsers" 
+                label="name" 
+                track-by="id" 
+                placeholder="Cari user..."
+                @search-change="fetchUsers" 
+              />
+              <div v-if="errors.user_id" class="text-danger small">{{ errors.user_id }}</div>
             </div>
+            
             <div class="col-md-6">
               <label for="recorded_by" class="form-label">Nama Pendata</label>
               <input v-model="recorded_by" readonly type="text" class="form-control" id="recorded_by">
@@ -24,489 +33,423 @@
             <!-- Numeric Fields -->
             <div class="col-md-4" v-for="field in numericFields" :key="field.name">
               <label :for="field.name" class="form-label">{{ field.label }}</label>
-              <input v-model="form[field.name]" :readonly="field.readonly" type="number" step="0.1" class="form-control"
-                :id="field.name">
-            </div>
-
-            <!-- Boolean Fields -->
-            <div class="col-md-6" v-for="field in booleanFields" :key="field.name">
-              <label class="form-label">{{ field.label }}</label>
-              <select v-model="form[field.name]" class="form-select">
-                <option disabled selected>Pilih</option>
-                <option :value="true">Ya</option>
-                <option :value="false">Tidak</option>
-              </select>
+              <input 
+                v-model.number="form[field.name]" 
+                :readonly="field.readonly" 
+                type="number" 
+                step="0.1" 
+                class="form-control"
+                :id="field.name"
+                @blur="validateField(field.name)"
+              >
+              <div v-if="errors[field.name]" class="text-danger small">{{ errors[field.name] }}</div>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary mt-3">
-            {{ isEditing ? 'Update Data' : 'Tambah Data' }}
+          <button type="submit" class="btn btn-primary mt-3" :disabled="isSubmitting">
+            <span v-if="isSubmitting">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Processing...
+            </span>
+            <span v-else>{{ isEditing ? 'Update Data' : 'Tambah Data' }}</span>
           </button>
-          <button v-if="isEditing" type="button" class="btn btn-secondary mt-3 ms-2" @click="cancelEdit">
+          
+          <button 
+            v-if="isEditing" 
+            type="button" 
+            class="btn btn-secondary mt-3 ms-2" 
+            @click="resetForm"
+            :disabled="isSubmitting"
+          >
             Batal
           </button>
         </form>
       </div>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="isLoading" class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Memuat data...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="records.length === 0" class="alert alert-info">
+      Tidak ada data gizi yang tersedia.
+    </div>
+
     <!-- List Data dalam Card -->
-    <div class="row">
+    <div v-else class="row">
       <div v-for="record in records" :key="record.id" class="col-md-6 col-lg-4 mb-4">
-        <div class="card">
-          <div class="card-body">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
             <h5 class="card-title">Pasien: {{ record.name }}</h5>
-            <p class="card-text">
+            <div class="card-text flex-grow-1">
               <strong>Petugas:</strong> {{ record.recorded_by }}<br>
               <strong>Tanggal:</strong> {{ formatDate(record.created_at) }}<br>
               <template v-for="field in allFields" :key="field.name">
                 <div>
-                  <p> <strong>{{ field.label }} :</strong> {{ record[field.name] }} {{ field.unit }}
-                  </p>
+                  <p><strong>{{ field.label }}:</strong> {{ record[field.name] }} {{ field.unit }}</p>
                 </div>
               </template>
-            </p>
-            <button class="btn btn-danger btn-sm p-1 px-2  me-2" @click="deleteData(record.id)">Hapus</button>
-            <button class="btn btn-info btn-sm p-1 px-2 me-2" data-bs-toggle="modal" data-bs-target="#detailModal"
-              @click="openDetailModal(record)">
-              Detail
-            </button>
+            </div>
+            <div class="mt-auto">
+              <button class="btn btn-danger btn-sm p-1 px-2 me-2" @click="confirmDelete(record.id)">
+                Hapus
+              </button>
+              <button class="btn btn-info btn-sm p-1 px-2 me-2" @click="openDetailModal(record)">
+                Detail
+              </button>
+              <button class="btn btn-warning btn-sm p-1 px-2" @click="editData(record)">
+                Edit
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <nav aria-label="Page navigation w-100" class="mt-4">
-            <ul class="pagination d-flex justify-content-center">
-                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                    <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
-                </li>
-                <li class="page-item" v-for="page in totalPages" :key="page" :class="{ active: page === currentPage }">
-                    <button class="page-link" @click="changePage(page)">{{ page }}</button>
-                </li>
-                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                    <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
-                </li>
-            </ul>
-        </nav>
 
-    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="detailModalLabel">Detail Data Pasien</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <template v-if="(selectedRecord)">
-              <p><strong>Pasien:</strong> {{ selectedRecord.name }}</p>
-              <p><strong>Recorded By:</strong> {{ selectedRecord.recorded_by }}</p>
-              <p><strong>Tanggal:</strong> {{ formatDate(selectedRecord.created_at) }}</p>
+    <!-- Pagination -->
+    <nav v-if="records.length > 0" aria-label="Page navigation" class="mt-4">
+      <ul class="pagination d-flex justify-content-center">
+        <li class="page-item" :class="{ disabled: currentPage === 1 }">
+          <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
+        </li>
+        <li 
+          class="page-item" 
+          v-for="page in visiblePages" 
+          :key="page" 
+          :class="{ active: page === currentPage }"
+        >
+          <button class="page-link" @click="changePage(page)">{{ page }}</button>
+        </li>
+        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+          <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
+        </li>
+      </ul>
+    </nav>
 
-              <template v-for="field in allFields" :key="field.name">
-
-                <div>
-                  <p> <strong>{{ field.label }} :</strong> {{ selectedRecord[field.name] }} {{ field.unit }}
-                  </p>
-                </div>
-              </template>
-
-              <h4>Hasil Kalkulasi & Rekomendasi:</h4>
-              <ul>
-                <li>
-                  <div>
-                    <b>Berat Badan
-                      menurut Umur :</b>
-                    <p v-if="selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m3sd">
-                      Berat badan sangat
-                      kurang (severely
-                      underweight)
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      Berat badan kurang
-                      (underweight)
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.weight > searchByKey(BBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.weight < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      Berat badan normal
-                    </p>
-                    <p v-else>
-                      Risiko Berat badan lebih
-                    </p>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <b>Panjang Badan
-                      atau Tinggi Badan
-                      menurut Umur :</b>
-                    <p v-if="selectedRecord.height < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
-                      Sangat Pendek
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      Pendek
-                    </p>
-                    <p
-                      v-else-if="selectedRecord.height > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && selectedRecord.height < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      Normal
-                    </p>
-                    <p v-else>
-                      Tinggi
-                    </p>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <b>Indeks Massa
-                      Tubuh menurut
-                      Umurr :</b>
-                    <div
-                      v-if="(selectedRecord.weight / selectedRecord.height) < searchByKey(TBU_L, 'age', selectedRecord.age).m3sd">
-                      <div class="aler alert-danger p-1 rounded">
-                        <b>Gizi Sangat Kurang/stunting </b>
-                        <p>
-                          Pemberian makanan yang baik pada anak gizi kurang adalah dengan meningkatkan asupan makanan
-                          tinggi
-                          protein hewani pada anak 2 kali lipat/porsi, dan lanjutkan pemberian makanan bergizi pada anak
-                          dengan memberikan makanan selingan/ cemilan 2 kali diantara makan berat ( 2 jam sebelum makan
-                          berat).
-                          Note : butuh penanganan lebih lanjut (beri icon alaram/!) lakukan konsultasi dan pemeriksaan
-                          kondisi
-                          anak kepada ahli gizi di puskesmas & bidan desa, atau DM ke instagram puskesmas setu
-                          <br>
-                          <b>
-                            <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
-                              <b>
-                                https://www.instagram.com/puskesmas_setu1
-                              </b>
-                            </a>
-                          </b>
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m3sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).m2sd">
-                      <div class="aler alert-danger p-1 rounded">
-                        <b>Gizi Kurang </b>
-                        <p>
-                          Pemberian makanan yang baik pada anak gizi kurang adalah dengan meningkatkan asupan makanan
-                          tinggi
-                          protein hewani pada anak 2,5 kali lipat/porsi, dan lanjutkan pemberian makanan bergizi pada
-                          anak
-                          dengan memberikan makanan selingan/ cemilan 2 kali diantara makan berat (2 jam sebelum makan
-                          berat).
-                          Note : butuh penanganan lebih lanjut (beri icon alaram/!) lakukan konsultasi dan pemeriksaan
-                          kondisi
-                          anak kepada ahli gizi di puskesmas & bidan desa, atau DM ke instagram puskesmas setu <br>
-                          <b>
-                            <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
-                              <b>
-                                https://www.instagram.com/puskesmas_setu1
-                              </b>
-                            </a>
-                          </b>
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      v-else-if="(selectedRecord.weight / selectedRecord.height) > searchByKey(TBU_L, 'age', selectedRecord.age).m2sd && (selectedRecord.weight / selectedRecord.height) < searchByKey(BBU_L, 'age', selectedRecord.age).p1sd">
-                      <div class="aler alert-success p-1 rounded">
-                        <b>Gizi Normal </b>
-                        <p>
-                          - Pemberian makanan untuk anak gizi normal dengan pertahankan pemberian makanan, dan lanjutkan
-                          pemberian gizi seimbang pada anak.
-                          - komposisi makanan : karbohidrat, protein (hewani, nabati), lemak, vitamin, mineral <br>
-                          <b>
-                            <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
-                              <b>
-                                https://www.instagram.com/puskesmas_setu1
-                              </b>
-                            </a>
-                          </b>
-                        </p>
-                      </div>
-                    </div>
-                    <div v-else>
-                      <div class="aler alert-danger p-1 rounded">
-                        <b>Gizi Berlebih / Obesitas </b>
-                        <p>
-                          Diet yang dilakukan dengan mengurangi asupan makanan/ minuman yang manis dengan kadar gula
-                          tinggi
-                          (seperti mengandung glukosa, sukrosa, fruktosa). Biarkan anak untuk lebih banyakakyivitas
-                          fisik
-                          seperti bermain di luar rumah dan kurang penggunaan hp pada anak <br>
-                          <b>
-                            <a href="https://www.instagram.com/puskesmas_setu1" class="font-bold">
-                              <b>
-                                https://www.instagram.com/puskesmas_setu1
-                              </b>
-                            </a>
-                          </b>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="mt-2">
-                      <h4>Panduan Makanan</h4>
-                      <p><b>Karbohidrat</b></p>
-                      <p>1 porsi nasi = ¾ gelas belimbing</p>
-                      <p>Bisa diganti dengan:</p>
-                      <ul>
-                        <li>Bihun 50 gr = ½ gelas belimbing</li>
-                        <li>Jagung segar 45 gr = 3 buah sedang</li>
-                        <li>Kentang 210 gr = 2 buah sedang</li>
-                        <li>Singkong 120 gr = 1½ potong sedang</li>
-                        <li>Makaroni 50 gr = ½ gelas belimbing</li>
-                        <li>Mie 50 gr = 1 gelas belimbing</li>
-                        <li>Roti 70 gr = 3 sisir</li>
-                      </ul>
-
-                      <p><b>Protein Hewani</b></p>
-                      <p>1 porsi setara dengan:</p>
-                      <ul>
-                        <li>Ikan segar 40 gr = 1 potong sedang</li>
-                        <li>Daging sapi 35 gr = 1 potong sedang</li>
-                        <li>Hati sapi 50 gr = 1 potong sedang</li>
-                        <li>Telur ayam 55 gr = 1 butir</li>
-                        <li>Udang 35 gr = 5 ekor ukuran sedang</li>
-                        <li>Susu sapi 200 ml = 1 gelas belimbing</li>
-                      </ul>
-
-                      <p><b>Protein Nabati</b></p>
-                      <p>1 porsi setara dengan:</p>
-                      <ul>
-                        <li>Tempe 50 gr = 2 potong sedang</li>
-                        <li>Kacang hijau 25 gr = 2½ sendok makan</li>
-                        <li>Tahu 100 gr = 2 potong sedang</li>
-                        <li>Oncom 50 gr = 2 potong besar</li>
-                        <li>Kembang tahu 20 gr = 1 lembar</li>
-                      </ul>
-
-                      <p><b>Lemak</b></p>
-                      <p>1 porsi setara dengan:</p>
-                      <ul>
-                        <li>Cumi-cumi 45 gr = 1 ekor kecil</li>
-                        <li>Daging ayam 40 gr = 1 potong sedang</li>
-                        <li>Ikan kembung 30 gr = ⅓ ekor sedang</li>
-                        <li>Ikan lele 40 gr = ⅓ ekor sedang</li>
-                        <li>Kerang 90 gr = ½ gelas belimbing</li>
-                        <li>Putih telur 65 gr = 2 butir</li>
-                        <li>Telur puyuh 55 gr = 5 butir</li>
-                      </ul>
-
-                      <p><b>Sayuran</b></p>
-                      <ul>
-                        <li>1 porsi = 100 gr atau 1 gelas sayuran setelah dimasak/ditiriskan</li>
-                      </ul>
-
-                      <p><b>Buah-buahan</b></p>
-                      <p>1 porsi setara dengan:</p>
-                      <ul>
-                        <li>Pisang Ambon 50 gr = 1 buah ukuran sedang</li>
-                        <li>Alpukat 50 gr = ½ buah ukuran besar</li>
-                        <li>Apel 85 gr = 1 buah kecil</li>
-                        <li>Jambu 100 gr = 1 buah sedang</li>
-                        <li>Jeruk 100 gr = 2 buah ukuran sedang</li>
-                        <li>Mangga 90 gr = ¾ buah ukuran sedang</li>
-                        <li>Melon 90 gr = 1 potong ukuran sedang</li>
-                        <li>Pepaya 150 gr = 1 potong ukuran besar</li>
-                      </ul>
-
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </template>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-success" @click="shareLink">Share Link</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Detail Modal -->
+    <NutritionDetailModal
+      ref="nutritionDetailModal" 
+      :record="selectedRecord"
+      :growth-standards="growthStandards"
+      @close="closeDetailModal"
+      @share="shareLink"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import VueMultiselect from 'vue-multiselect';
+import NutritionDetailModal from './NutritionDetailModal.vue';
+// import { useConfirmDialog } from '@vueuse/core';
+// import { useToast } from 'vue-toastification';
 
-const runtimeConfig = useRuntimeConfig();
+// Constants
+const NUMERIC_FIELDS = [
+  { unit: "Kg", name: 'weight', label: 'Berat', readonly: false, min: 0, max: 100 },
+  { unit: "Cm", name: 'height', label: 'Tinggi', readonly: false, min: 0, max: 200 },
+  { unit: "bulan", name: 'age', label: 'Usia saat ini', readonly: true }
+];
+
+// Composables
+// const toast = useToast();
+
+// Reactive State
+const records = ref([]);
+const form = ref({
+  user_id: null,
+  weight: null,
+  height: null,
+  age: null
+});
+const errors = ref({});
+const isEditing = ref(false);
+const isLoading = ref(false);
+const isSubmitting = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const perPage = ref(6);
-const selectedUser = ref(null);
-// Fields configuration
-const numericFields = ref([
-  { unit: "Kg", name: 'weight', label: 'Berat', readonly: false },
-  { unit: "Cm", name: 'height', label: 'Tinggi', readonly: false },
-  { unit: "bulan", name: 'age', label: 'Usia saat ini', readonly: true, custom: 'usia' }
-]);
-const selectedRecord = ref(null);
-function changePage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    fetchRecords();
-  }
-}
-const booleanFields = ref([]);
-
-const allFields = ref([...numericFields.value, ...booleanFields.value]);
-
-const records = ref([]);
-const form = ref({
-  weight: "",
-  height: "",
-  age: "",
-});
-const isEditing = ref(false);
-function calculatePoints(record) {
-  let totalPoints = 0;
-
-  booleanFields.value.forEach(field => {
-    if (record[field.name] === 1) {
-      totalPoints += field.point;
-    }
-  });
-
-  return totalPoints;
-}
-console.log(form.value);
-
-// User selection data
 const userOptions = ref([]);
 const isFetchingUsers = ref(false);
+const recorded_by = ref("");
+const selectedRecord = ref(null);
+const growthStandards = ref({
+  BBPB: { L: null, P: null },
+  BBTB: { L: null, P: null },
+  BBU: { L: null, P: null },
+  IMTU: { L: null, P: null },
+  TBU: { L: null, P: null }
+});
+const nutritionDetailModal = ref(null)
+// Computed Properties
+const numericFields = computed(() => NUMERIC_FIELDS);
+const allFields = computed(() => [...numericFields.value]);
+const visiblePages = computed(() => {
+  const pages = [];
+  const maxVisible = 5;
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2));
+  let end = Math.min(totalPages.value, start + maxVisible - 1);
+  
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1);
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+});
 
-// Fetch all records from API
-async function fetchRecords() {
-  try {
+// Lifecycle Hooks
+onMounted(() => {
+  initializeForm();
+  fetchRecords();
+  loadGrowthStandards();
+});
 
-    const request = await fetch(`https://api.kaderpintar.id/api/gizi?page=${currentPage.value}`);
-    const response = await request.json();;
-    records.value = response.data.data;
-    totalPages.value = response.data.last_page;
-
-  } catch (error) {
-    console.error("Error fetching records:", error);
+// Methods
+function initializeForm() {
+  if (process.client) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      recorded_by.value = user.name;
+      form.value.recorded_by = user.id;
+    }
   }
 }
 
-// Fetch users from API
-async function fetchUsers(query) {
-  if (!query) return;
-  isFetchingUsers.value = true;
+async function fetchRecords() {
   try {
+    isLoading.value = true;
+    const response = await fetch(`https://api.kaderpintar.id/api/gizi?page=${currentPage.value}`);
+    const data = await response.json();
+    
+    if (response.ok) {
+      records.value = data.data.data;
+      totalPages.value = data.data.last_page;
+    } else {
+      throw new Error(data.message || 'Gagal memuat data');
+    }
+  } catch (error) {
+    console.error("Error fetching records:", error);
+    // toast.error(error.message || 'Terjadi kesalahan saat memuat data');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function loadGrowthStandards() {
+  try {
+    const standards = ['BBPB', 'BBTB', 'BBU', 'IMTU', 'TBU'];
+    const genders = ['L', 'P'];
+    
+    await Promise.all(standards.flatMap(standard => 
+      genders.map(async gender => {
+        const response = await fetch(`/assets/json/gizi/${standard}_${gender}.json`);
+        if (response.ok) {
+          growthStandards.value[standard][gender] = await response.json();
+        } else {
+          throw new Error(`Failed to load ${standard}_${gender}.json`);
+        }
+      })
+    ));
+  } catch (error) {
+    console.error('Error loading growth standards:', error);
+    // toast.error('Gagal memuat standar pertumbuhan');
+  }
+}
+
+async function fetchUsers(query) {
+  if (!query || query.length < 3) return;
+  
+  try {
+    isFetchingUsers.value = true;
     const response = await fetch(`https://api.kaderpintar.id/api/users?search=${query}`);
     const data = await response.json();
-    userOptions.value = data.data.data.map(user => ({ id: user.id, name: user.name, birth_date: user.birth_date }));
-
-    console.log("KEPILIH", form.value.user_id);
-
-    // Jika pasien sudah dipilih, hitung usia dalam bulan
-    if (form.value.user_id) {
-      const selectedUser = userOptions.value.find(user => user.id === form.value.user_id.id);
-      if (selectedUser) {
-        form.value.age = calculateAgeInMonths(selectedUser.birth_date);
-      }
+    
+    if (response.ok) {
+      userOptions.value = data.data.data.map(user => ({ 
+        id: user.id, 
+        name: user.name, 
+        birth_date: user.birth_date 
+      }));
+    } else {
+      throw new Error(data.message || 'Gagal mencari pasien');
     }
-
   } catch (error) {
     console.error("Error fetching users:", error);
+    // toast.error(error.message || 'Terjadi kesalahan saat mencari pasien');
   } finally {
     isFetchingUsers.value = false;
   }
 }
 
+function validateForm() {
+  const newErrors = {};
+  
+  if (!form.value.user_id) {
+    newErrors.user_id = 'Pasien harus dipilih';
+  }
+  
+  NUMERIC_FIELDS.forEach(field => {
+    if (!field.readonly) {
+      const value = form.value[field.name];
+      
+      if (value === null || value === undefined || value === '') {
+        newErrors[field.name] = `${field.label} harus diisi`;
+      } else if (field.min !== undefined && value < field.min) {
+        newErrors[field.name] = `${field.label} tidak boleh kurang dari ${field.min}`;
+      } else if (field.max !== undefined && value > field.max) {
+        newErrors[field.name] = `${field.label} tidak boleh lebih dari ${field.max}`;
+      }
+    }
+  });
+  
+  errors.value = newErrors;
+  return Object.keys(newErrors).length === 0;
+}
 
-// Save or update data
-async function saveData() {
+function validateField(fieldName) {
+  const field = NUMERIC_FIELDS.find(f => f.name === fieldName);
+  if (!field || field.readonly) return;
+  
+  const value = form.value[fieldName];
+  
+  if (value === null || value === undefined || value === '') {
+    errors.value[fieldName] = `${field.label} harus diisi`;
+  } else if (field.min !== undefined && value < field.min) {
+    errors.value[fieldName] = `${field.label} tidak boleh kurang dari ${field.min}`;
+  } else if (field.max !== undefined && value > field.max) {
+    errors.value[fieldName] = `${field.label} tidak boleh lebih dari ${field.max}`;
+  } else {
+    delete errors.value[fieldName];
+  }
+}
+
+async function handleSubmit() {
+  if (!validateForm()) return;
+  
   try {
+    isSubmitting.value = true;
+    
     const url = isEditing.value
       ? `https://api.kaderpintar.id/api/gizi/${form.value.id}`
       : 'https://api.kaderpintar.id/api/gizi';
-
+      
     const method = isEditing.value ? 'PUT' : 'POST';
-    let body = form.value
-    body.user_id = form.value.user_id.id
-    const data = await useFetch(url, {
+    const body = {
+      ...form.value,
+      user_id: form.value.user_id.id
+    };
+    
+    const response = await fetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
-    const response = data.data.value;
-
-    if (data.status.value != "success") throw new Error("Gagal menyimpan data.");
-
-    fetchRecords(); // Refresh data
-    resetForm();
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      // toast.success(data.message || 'Data berhasil disimpan');
+      resetForm();
+      fetchRecords();
+    } else {
+      throw new Error(data.message || 'Gagal menyimpan data');
+    }
   } catch (error) {
     console.error("Error saving data:", error);
+    // toast.error(error.message || 'Terjadi kesalahan saat menyimpan data');
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
-// Edit Data
 function editData(record) {
-  form.value = { ...record };
-  isEditing.value = true;
-}
-function cancelEdit() {
   form.value = {
-    weight: "",
-    height: "",
-  }
-  isEditing.value = false;
-
+    id: record.id,
+    user_id: { id: record.user_id, name: record.name },
+    weight: record.weight,
+    height: record.height,
+    age: record.age
+  };
+  isEditing.value = true;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-// Delete Data
+
+function resetForm() {
+  form.value = {
+    user_id: null,
+    weight: null,
+    height: null,
+    age: null
+  };
+  errors.value = {};
+  isEditing.value = false;
+}
+
+async function confirmDelete(id) {
+  // const { isConfirmed } = await useConfirmDialog(
+  //   'Apakah Anda yakin ingin menghapus data ini?',
+  //   'Konfirmasi Penghapusan'
+  // );
+  
+  // if (isConfirmed) {
+    deleteData(id);
+  // }
+}
+
 async function deleteData(id) {
   try {
     const response = await fetch(`https://api.kaderpintar.id/api/gizi/${id}`, {
       method: 'DELETE',
     });
-
-    if (!response.ok) throw new Error("Gagal menghapus data.");
-
-    fetchRecords(); // Refresh data
+    
+    const data = await response.json();
+    
+    if (response.ok) {
+      // toast.success(data.message || 'Data berhasil dihapus');
+      fetchRecords();
+    } else {
+      throw new Error(data.message || 'Gagal menghapus data');
+    }
   } catch (error) {
     console.error("Error deleting data:", error);
+    // toast.error(error.message || 'Terjadi kesalahan saat menghapus data');
   }
 }
 
-// Reset Form
-function resetForm() {
-  form.value = {};
-  isEditing.value = false;
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchRecords();
+  }
 }
 
-// Format Boolean Values for Display
-function formatValue(value) {
-  if (value === true) return 'Ya';
-  if (value === false) return 'Tidak';
-  return value ?? '-';
-}
 function openDetailModal(record) {
   selectedRecord.value = record;
+  nutritionDetailModal.value.show();
+  // Modal is handled by the NutritionDetailModal component
 }
 
-// Fetch records on component mount
-fetchRecords();
-const recorded_by = ref("");
-if (process.client) {
-  form.recorded_by = JSON.parse(localStorage.getItem('user')).id
-  recorded_by.value = JSON.parse(localStorage.getItem('user')).name
-
-
+function closeDetailModal() {
+  selectedRecord.value = null;
 }
+
 function formatDate(dateString) {
+  if (!dateString) return '';
+  
   const date = new Date(dateString);
-
-  // Convert to WIB (UTC+7)
-  const wibOffset = 7 * 60; // WIB is UTC+7
-  const wibDate = new Date(date.getTime() + wibOffset * 60 * 1000);
-
-  // Format the date
+  if (isNaN(date.getTime())) return dateString;
+  
   const options = {
     year: 'numeric',
     month: '2-digit',
@@ -516,127 +459,87 @@ function formatDate(dateString) {
     second: '2-digit',
     timeZone: 'Asia/Jakarta'
   };
-
-  const formattedDate = wibDate.toLocaleString('en-GB', options).replace(',', '');
-
-  return formattedDate;
+  
+  return date.toLocaleString('id-ID', options);
 }
 
 function calculateAgeInMonths(birthDate) {
+  if (!birthDate) return null;
+  
   const today = new Date();
   const birthDateObj = new Date(birthDate);
-
+  
+  if (isNaN(birthDateObj.getTime())) return null;
+  
   const yearDiff = today.getFullYear() - birthDateObj.getFullYear();
   const monthDiff = today.getMonth() - birthDateObj.getMonth();
   const dayDiff = today.getDate() - birthDateObj.getDate();
-
+  
   let ageInMonths = yearDiff * 12 + monthDiff;
-
-  // If the birth date hasn't passed this year yet, subtract 1 month
+  
   if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
     ageInMonths--;
   }
-
+  
   return ageInMonths;
-}
-watch(() => form.value.user_id, (newUserId) => {
-  if (newUserId) {
-    const selectedUser = userOptions.value.find(user => user.id === newUserId.id);
-    if (selectedUser) {
-      form.value.age = calculateAgeInMonths(selectedUser.birth_date);
-    }
-  } else {
-    form.value.age = ""; // Reset age jika tidak ada user yang dipilih
-  }
-});
-
-const BBPB_L = ref({});
-const BBPB_P = ref({});
-const BBTB_L = ref({});
-const BBTB_P = ref({});
-const BBU_L = ref({});
-const BBU_P = ref({});
-const IMTU_L = ref({});
-const IMTU_P = ref({});
-const TBU_L = ref({});
-const TBU_P = ref({});
-async function fetchCalculate() {
-  try {
-    const BBPB_L_req = await fetch('/assets/json/gizi/BBPB_L.json');
-    const BBPB_P_req = await fetch('/assets/json/gizi/BBPB_P.json');
-    const BBTB_L_req = await fetch('/assets/json/gizi/BBTB_L.json');
-    const BBTB_P_req = await fetch('/assets/json/gizi/BBTB_P.json');
-    const BBU_L_req = await fetch('/assets/json/gizi/BBU_L.json');
-    const BBU_P_req = await fetch('/assets/json/gizi/BBU_P.json');
-    const IMTU_L_req = await fetch('/assets/json/gizi/IMTU_L.json');
-    const IMTU_P_req = await fetch('/assets/json/gizi/IMTU_P.json');
-    const TBU_L_req = await fetch('/assets/json/gizi/TBU_L.json');
-    const TBU_P_req = await fetch('/assets/json/gizi/TBU_P.json');
-    BBPB_L.value = await BBPB_L_req.json();
-    BBPB_P.value = await BBPB_P_req.json();
-    BBTB_L.value = await BBTB_L_req.json();
-    BBTB_P.value = await BBTB_P_req.json();
-    BBU_L.value = await BBU_L_req.json();
-    BBU_P.value = await BBU_P_req.json();
-    IMTU_L.value = await IMTU_L_req.json();
-    IMTU_P.value = await IMTU_P_req.json();
-    TBU_L.value = await TBU_L_req.json();
-    TBU_P.value = await TBU_P_req.json();
-
-  } catch (error) {
-    console.error('Error fetching BBPB_L.json:', error);
-    return null;
-  }
-}
-function searchByKey(data, key, searchValue) {
-  // console.log(data);
-
-  return data.filter(item => {
-    // Jika nilai dari key adalah string, lakukan pencarian case-insensitive
-    if (typeof item[key] === 'string') {
-      return item[key].toLowerCase().includes(searchValue.toLowerCase());
-    }
-    // Jika nilai dari key adalah number, lakukan pencarian exact match
-    return item[key] === searchValue;
-  })[0];
-}
-console.log("getrecord");
-await fetchRecords(); // Refresh data
-console.log("getrecord done");
-
-fetchCalculate();
-
-function getDetailLink() {
-  const baseUrl = runtimeConfig.public.siteUrl || 'http://localhost:3000'; // fallback
-  return `${baseUrl}/gizi/detail?id=${selectedRecord.value?.id}`;
-}
-
-function copyLink() {
-  const link = getDetailLink();
-  navigator.clipboard.writeText(link)
-    .then(() => alert('Link berhasil disalin!'))
-    .catch(err => alert('Gagal menyalin: ' + err));
 }
 
 function shareLink() {
-  const link = getDetailLink();
+  if (!selectedRecord.value) return;
+  
+  const runtimeConfig = useRuntimeConfig();
+  const baseUrl = runtimeConfig.public.siteUrl || window.location.origin;
+  const link = `${baseUrl}/gizi/detail?id=${selectedRecord.value.id}`;
+  
   if (navigator.share) {
     navigator.share({
-      title: 'Detail Data Pasien',
-      text: 'Lihat detail data pasien di link berikut:',
+      title: 'Detail Data Gizi Anak',
+      text: 'Lihat detail data gizi anak berikut:',
       url: link
-    }).catch(err => alert('Gagal membagikan: ' + err));
+    }).catch(err => {
+      console.error('Error sharing:', err);
+      copyToClipboard(link);
+    });
   } else {
-    alert('Fitur berbagi tidak didukung di perangkat ini.');
+    copyToClipboard(link);
   }
 }
-</script>
-<style>
-@media (min-width: 992px) {
 
-  .modal-lg,
-  .modal-xl {
-    max-width: 800px !important;
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    // .then(() => toast.success('Link berhasil disalin ke clipboard'))
+    .catch(err => {
+      console.error('Failed to copy:', err);
+      // toast.error('Gagal menyalin link');
+    });
+}
+
+// Watchers
+watch(() => form.value.user_id, (newUser) => {
+  if (newUser && newUser.birth_date) {
+    form.value.age = calculateAgeInMonths(newUser.birth_date);
+  } else {
+    form.value.age = null;
   }
+});
+</script>
+
+<style scoped>
+.card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.spinner-border {
+  vertical-align: middle;
 }
 </style>

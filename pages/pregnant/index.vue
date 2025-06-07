@@ -1,7 +1,8 @@
 <template>
     <div class="container mt-5">
         <h1 class="mb-4">Data Ibu Hamil</h1>
-        <button class="btn bg-green">Export Excel</button>
+        <a class="btn bg-green" href="https://api.kaderpintar.id/api/pregnants?export=true" target="_blank">Export Excel</a>
+
 
         <!-- Form Tambah/Edit Data -->
         <div class="card mb-4">

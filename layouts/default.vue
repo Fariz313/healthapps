@@ -46,7 +46,7 @@
                             </div>
                             <div class="col-xl-2 col-12">
                                 <div class="get-quote d-flex">
-                                    <NuxtLink v-if="!isLoggedIn" to="/login" class="btn ml-3">Masuk</NuxtLink>                                    
+                                    <router-link v-if="!isLoggedIn" to="/login" class="btn ml-3">Masuk</router-link>                                    
                                     <button v-else class="btn btn-primary" @click="logout">Logout</button>
 
 
@@ -66,7 +66,7 @@
                                 <li v-if="isLoggedIn" class="list-group-item"><router-link to="/gizi">Skrining
                                         Gizi</router-link></li>
                                 <li v-if="!isLoggedIn" class="list-group-item">
-                                    <NuxtLink to="/login">Masuk</NuxtLink>
+                                    <router-link to="/login">Masuk</router-link>
                                 </li>
                                 <li v-else class="list-group-item">
                                     <button class="btn btn-primary" @click="logout">Logout</button>

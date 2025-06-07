@@ -7,10 +7,10 @@
       </div>
       <div class="modal-body">
         <template v-if="(record)">
-          <div v-if="(record.BP < 120 && record.BP2 < 80)" class="alert alert-success" role="alert">
+          <div v-if="(record.BP <= 120 && record.BP2 <= 80)" class="alert alert-success" role="alert">
             <b>Tekanan Darah Normal Pertahankan !</b>
           </div>
-          <div v-else-if="record.BP < 140 && record.BP2 < 90" class="alert alert-warning" role="alert">
+          <div v-else-if="record.BP <= 140 && record.BP2 <= 90" class="alert alert-warning" role="alert">
             <b>Pre Hipertensi</b>
             <p>Anjuran Perubahan Gaya Hidup</p>
             <ol>
@@ -42,7 +42,7 @@
               </li>
             </ol>
           </div>
-          <div v-else-if="record.BP < 160 && record.BP2 < 100" class="alert alert-warning" role="alert">
+          <div v-else-if="record.BP <= 160 && record.BP2 <= 100" class="alert alert-warning" role="alert">
             <b>Pre Hipertensi</b>
             <p>Anjuran Perubahan Gaya Hidup</p>
             <ol>
@@ -76,7 +76,7 @@
             <p>Segera kunjungi fasilitas kesehatan jika 2 minggu pasca modifikasi gaya hidup target tekanan darah tidak
               tercapai</p>
           </div>
-          <div v-else-if="record.BP < 160 && record.BP2 < 100" class="alert alert-warning" role="alert">
+          <div v-else-if="record.BP <= 160 && record.BP2 <= 100" class="alert alert-warning" role="alert">
             <b>Pre Hipertensi grade 2</b>
             <p>Segera datangi fasilitas kesehatan untuk mendapat pengobatan dari dokter</p>
             <ol>
