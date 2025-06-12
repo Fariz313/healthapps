@@ -2,7 +2,7 @@ export default defineNuxtConfig({
   app: {
     
     // baseURL: "/",
-    buildAssetsDir: 'assets',
+    // buildAssetsDir: 'assets',
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no',
@@ -29,6 +29,8 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/assets/style.css' },
         { rel: 'stylesheet', href: '/assets/css/responsive.css' },
         { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' },
+        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css' }
+
       ],
       script: [
         { src: '/assets/js/jquery.min.js', defer: true },

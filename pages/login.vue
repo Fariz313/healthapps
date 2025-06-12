@@ -1,13 +1,19 @@
 <template>
     <div style="min-height: 100vh;">
         <div class="absolute-center">
-            <div class="circle-form">
+            <div class="circle-form" style="width: 750px;">
                 <form @submit.prevent="login">
                     <h2>Welcome</h2>
                     <input v-model="credentials.email" type="email" placeholder="Email" required>
-                    <input v-model="credentials.password" type="password" placeholder="Password" required>
+                    <div class="password-input">
+                        <input v-model="credentials.password" :type="showPassword ? 'text' : 'password'"
+                            placeholder="Password" required>
+                        <span class="toggle-password" @click="showPassword = !showPassword">
+                            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                        </span>
+                    </div>
                     <button type="submit">Sign In</button>
-                    <NuxtLink to="/forget_password">Lupa Password? Klik Disini</NuxtLink>
+                    <NuxtLink class="w-100 text-center d-block" to="/forget_password">Lupa Password? Klik Disini</NuxtLink>
                     <br><br>
                 </form>
             </div>
@@ -25,7 +31,7 @@ const credentials = reactive({
     email: '',
     password: '',
 });
-
+const showPassword = ref(false);
 async function login() {
     try {
         // Send a POST request to the external API
@@ -135,5 +141,19 @@ async function login() {
 
 .circle-form button:hover {
     transform: scale(1.02);
+}
+
+.password-input {
+    position: relative;
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
 }
 </style>
